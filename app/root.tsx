@@ -1,5 +1,5 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
-
+import favicon from '../src/assets/scorm-favicon.png'
 import type { Route } from './+types/root'
 import './app.css'
 
@@ -24,6 +24,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <Meta />
         <Links />
+        <link rel='icon' href={favicon}></link>
       </head>
       <body>
         {children}

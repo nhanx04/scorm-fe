@@ -1,10 +1,10 @@
 import type { Route } from './+types/home'
-import { Welcome } from '../../src/features/auth'
+import { HomePage } from '../../src/features/home'
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: 'Welcome to SCORM' }, { name: 'description', content: 'Welcome to SCORM' }]
+  return [{ title: 'Home Page' }, { name: 'description', content: 'Trang chủ' }]
 }
 
 export default function Home() {
-  return <Welcome />
+  return <HomePage />
 }
