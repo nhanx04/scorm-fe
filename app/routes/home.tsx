@@ -1,8 +1,8 @@
 import type { Route } from './+types/home'
-import { Welcome } from '../welcome/welcome'
+import { Welcome } from '../../src/features/auth'
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: 'New React Router App' }, { name: 'description', content: 'Welcome to React Router!' }]
+  return [{ title: 'Welcome to SCORM' }, { name: 'description', content: 'Welcome to SCORM' }]
 }
 
 export default function Home() {
