@@ -1,10 +1,10 @@
-import React from 'react'
 import { MainLayout } from '../../layouts'
+import HomePageContent from './pages/HomePage'
 
 export function HomePage() {
   return (
     <MainLayout>
-      <div>Đây là trang chủ</div>
+      <HomePageContent />
     </MainLayout>
   )
 }
