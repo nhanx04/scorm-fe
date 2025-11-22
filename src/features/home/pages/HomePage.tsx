@@ -10,7 +10,7 @@ const HomePage = () => {
           <Welcome />
           <RecentActivity />
         </div>
-        <div className='flex-1 bg-blue-900 p-5'>
+        <div className='flex-1 bg-blue-200 p-5'>
           <PopularTemplates />
         </div>
       </div>
