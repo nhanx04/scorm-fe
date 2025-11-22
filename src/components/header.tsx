@@ -20,8 +20,8 @@ const Header: React.FC = () => {
     {
       id: 'course',
       label: 'Courses',
-      path: '/course',
-      active: currentPath === '/courses'
+      path: '/my-course',
+      active: currentPath === '/my-course'
     },
     {
       id: 'library',

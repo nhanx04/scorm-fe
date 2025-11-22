@@ -18,7 +18,7 @@ const PopularTemplates = () => {
   return (
     <div>
       <div className='mb-5'>
-        <h2 className='text-xl font-semibold text-white'>Popular templates</h2>
+        <h2 className='text-xl font-semibold text-blue-900'>Popular templates</h2>
       </div>
       <div className='space-y-4'>
         {popularTemplates.map((template, index) => (

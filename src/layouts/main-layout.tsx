@@ -9,7 +9,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className='flex flex-col min-h-screen'>
       <Header />
-      <main className='flex-1'>{children}</main>
+      {/* main area uses exact viewport height minus header so h-full works in children */}
+      <main className='flex flex-col' style={{ height: 'calc(100vh - 5rem)' }}>
+        {children}
+      </main>
     </div>
   )
 }
