@@ -59,9 +59,9 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
   }
 
   return (
-    <div className='rounded-md border border-gray-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50 shadow-sm'>
+    <div className='p-2 rounded-md border border-gray-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50 shadow-sm'>
       {/* Top tabs */}
-      <div className='sticky top-0 z-10 rounded-md border-b border-gray-200 bg-blue-200 backdrop-blur'>
+      <div className='sticky top-0 p-2 z-10 rounded-md border-b border-gray-200 bg-blue-200 backdrop-blur'>
         <nav className='-mb-px flex space-x-8'>
           <button
             type='button'
@@ -111,7 +111,7 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
               <textarea
                 value={payload.description}
                 onChange={(e) => handleChange('description', e.target.value)}
-                className='mt-1 block w-full rounded-sm border-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
+                className='mt-1 block w-full rounded-sm border-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
                 rows={3}
                 placeholder='Mô tả chi tiết về gói SCORM này...'
               />
@@ -125,7 +125,7 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
                 max='100'
                 value={payload.passingScore}
                 onChange={(e) => handleChange('passingScore', Number(e.target.value))}
-                className='mt-1 block w-full rounded-sm border-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
+                className='mt-1 block w-full rounded-sm border-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
               />
             </div>
 
@@ -136,7 +136,7 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
                 min='1'
                 value={payload.maxAttempts}
                 onChange={(e) => handleChange('maxAttempts', Number(e.target.value))}
-                className='mt-1 block w-full rounded-sm border-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
+                className='mt-1 block w-full rounded-sm border-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
               />
             </div>
 
@@ -145,7 +145,7 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
               <select
                 value={payload.reviewMode}
                 onChange={(e) => handleChange('reviewMode', e.target.value as ReviewMode)}
-                className='mt-1 block w-full rounded-sm border-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
+                className='mt-1 block w-full rounded-sm border-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
               >
                 {reviewModeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -161,7 +161,7 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
                 type='url'
                 value={payload.welcomeVideoUrl || ''}
                 onChange={(e) => handleChange('welcomeVideoUrl', e.target.value)}
-                className='mt-1 block w-full rounded-sm border-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
+                className='mt-1 block w-full rounded-sm border-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
                 placeholder='https://example.com/video.mp4'
               />
             </div>
@@ -172,7 +172,7 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
             <textarea
               value={payload.themeJson}
               onChange={(e) => handleChange('themeJson', e.target.value)}
-              className='block w-full rounded-sm border-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-mono text-sm h-44 py-3 px-3.5 bg-white/70'
+              className='block w-full rounded-sm border-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 font-mono text-sm h-44 py-3 px-3.5 bg-white/70'
               placeholder='{"primaryColor": "#007bff", "fontFamily": "Arial, sans-serif"}'
             />
             <p className='mt-1 text-xs text-gray-500'>
@@ -181,10 +181,10 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
           </div>
         </div>
       ) : (
-        <div className='space-y-6'>
+        <div className='space-y-6 p-4'>
           <div>
-            <h3 className='text-lg font-medium text-gray-900 mb-2'>Quản lý câu hỏi</h3>
-            <p className='text-sm text-gray-500'>Thêm và chỉnh sửa các câu hỏi cho bài kiểm tra.</p>
+            <h3 className='text-xl font-medium text-gray-900 mb-2'>Quản lý câu hỏi</h3>
+            <p className='text-lg text-blue-900'>Thêm và chỉnh sửa các câu hỏi cho bài kiểm tra.</p>
           </div>
 
           <QuestionList questions={payload.questions || []} onChange={handleQuestionsChange} />

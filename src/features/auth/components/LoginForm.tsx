@@ -15,8 +15,11 @@ const LoginForm = () => {
     setLoading(true)
     try {
       const res = await authApi.login({ email, password })
-      localStorage.setItem('accessToken', res.data.accessToken)
-      // Redirect to dashboard
+      const token = (res.data as any).accessToken || (res.data as any).token
+      if (token) {
+        localStorage.setItem('accessToken', token)
+      }
+      // Redirect to My Courses page
       navigate('/home')
     } catch (err: any) {
       setError(err?.response?.status === 401 ? 'Sai email hoặc mật khẩu' : 'Đăng nhập thất bại')

@@ -75,13 +75,13 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
     const isMatching = question.questionType === 'MATCHING'
     const isTrueFalse = question.questionType === 'TRUE_FALSE'
     const isShortAnswer = question.questionType === 'SHORT_ANSWER'
-    const answerColors = ['bg-blue-50', 'bg-purple-50', 'bg-amber-50', 'bg-green-50', 'bg-rose-50']
+    const answerColors = ['bg-blue-100', 'bg-purple-100', 'bg-amber-100', 'bg-green-100', 'bg-rose-100']
     const answerColor = answerColors[index % answerColors.length]
 
     return (
       <div
         key={index}
-        className={`group relative p-3 rounded-xl ${answerColor} border border-transparent hover:border-gray-200 transition-colors`}
+        className={`group relative p-3 rounded-xl ${answerColor} border border-transparent hover:border-gray-400 transition-colors`}
       >
         <div className='flex items-start gap-3'>
           {/* Answer selection button */}
@@ -91,7 +91,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
               onClick={() => toggleCorrect(index)}
               className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
                 answer.correct
-                  ? 'bg-green-500 text-white shadow-sm'
+                  ? 'bg-green-500 text-white border-1'
                   : 'border-2 border-gray-300 text-transparent hover:border-green-400 bg-white'
               }`}
             >
@@ -108,7 +108,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                   value={answer.text}
                   onChange={(e) => updateAnswer(index, { text: e.target.value })}
                   placeholder={isTrueFalse ? 'Ví dụ: Đúng' : 'Nhập đáp án'}
-                  className='w-full rounded-lg border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3.5 bg-white/80'
+                  className='w-full rounded-sm border-gray-400 border-1 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3.5 bg-white/80'
                 />
 
                 {/* Image URL Input */}
@@ -122,13 +122,13 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                       type='url'
                       value={answer.imageUrl || ''}
                       onChange={(e) => updateAnswer(index, { imageUrl: e.target.value })}
-                      className='flex-1 rounded-lg border-gray-200 shadow-sm focus:border-indigo-400 focus:ring-indigo-400 text-sm py-1.5 px-3 bg-white/80'
+                      className='flex-1 rounded-sm border-gray-200 border-1 focus:border-indigo-400 focus:ring-indigo-400 text-sm py-1.5 px-3 bg-white/80'
                       placeholder='https://example.com/image.jpg'
                     />
                   </div>
                   {answer.imageUrl && (
                     <div className='mt-1'>
-                      <div className='w-full max-w-xs border border-gray-200 rounded-lg overflow-hidden bg-white p-1'>
+                      <div className='w-full max-w-xs border border-gray-400 rounded-sm overflow-hidden bg-white p-1'>
                         <img
                           src={answer.imageUrl}
                           alt='Xem trước đáp án'
@@ -151,7 +151,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                     value={answer.matchValue || ''}
                     onChange={(e) => updateAnswer(index, { matchValue: e.target.value })}
                     placeholder='Giá trị khớp'
-                    className='w-full rounded-lg border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3.5 bg-white/80'
+                    className='w-full rounded-lg border-gray-400 border-1 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3.5 bg-white/80'
                   />
                 </div>
               )}
@@ -193,8 +193,8 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
   }
 
   return (
-    <div className='border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden mb-6 bg-white'>
-      <div className='bg-emerald-600 px-4 py-2 border-b border-gray-200/80 flex items-center justify-between'>
+    <div className='border border-gray-400/80 rounded-2xl border-1 overflow-hidden mb-6 bg-white'>
+      <div className='bg-emerald-600 px-4 py-4 border-b border-gray-400/80 flex items-center justify-between'>
         <div className='flex items-center space-x-2'>
           <button
             type='button'
@@ -203,7 +203,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
           >
             {isExpanded ? <FiChevronDown /> : <FiChevronUp />}
           </button>
-          <span className='text-sm font-medium text-white'>
+          <span className='text-lg font-medium text-white'>
             Câu {question.questionOrder ? question.questionOrder + 1 : ''} - {renderQuestionTypeLabel()}
           </span>
         </div>
@@ -248,7 +248,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
               <textarea
                 value={question.text}
                 onChange={(e) => updateQuestion({ text: e.target.value })}
-                className='w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5 min-h-[100px]'
+                className='w-full rounded-sm border-gray-300 border-1 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5 min-h-[100px]'
                 placeholder='Nhập nội dung câu hỏi...'
               />
 
@@ -263,14 +263,14 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                     type='url'
                     value={question.imageUrl || ''}
                     onChange={(e) => updateQuestion({ imageUrl: e.target.value })}
-                    className='flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3.5'
+                    className='flex-1 rounded-sm border-gray-300 border-1 focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3.5'
                     placeholder='https://example.com/image.jpg'
                   />
                 </div>
                 {question.imageUrl && (
                   <div className='mt-2'>
                     <div className='text-xs text-gray-500 mb-1'>Xem trước:</div>
-                    <div className='w-full max-w-xs border border-gray-200 rounded-lg overflow-hidden'>
+                    <div className='w-full max-w-xs border place-items-center border-gray-400 rounded-sm overflow-hidden'>
                       <img
                         src={question.imageUrl}
                         alt='Xem trước câu hỏi'
@@ -302,7 +302,9 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
               </button>
             </div>
 
-            <div className='space-y-2'>{question.answers.map((answer, index) => renderAnswerInput(answer, index))}</div>
+            <div className='space-y-2 b'>
+              {question.answers.map((answer, index) => renderAnswerInput(answer, index))}
+            </div>
           </div>
 
           <div className='flex items-center justify-between text-xs text-gray-500'>
@@ -332,16 +334,26 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                 <option value='SHORT_ANSWER'>Trả lời ngắn</option>
               </select>
             </div>
-            <div className='flex items-center'>
-              <label className='mr-2'>Điểm tối đa:</label>
-              <input
-                type='number'
-                min='0'
-                step='0.5'
-                value={question.points || 1}
-                onChange={(e) => updateQuestion({ points: parseFloat(e.target.value) || 0 })}
-                className='w-16 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs h-6'
-              />
+            <div className='flex items-center gap-2'>
+              <div className='flex items-center'>
+                <label className='mr-2'>Điểm tối đa:</label>
+                <input
+                  type='number'
+                  min='0'
+                  step='0.5'
+                  value={question.points || 1}
+                  onChange={(e) => updateQuestion({ points: parseFloat(e.target.value) || 0 })}
+                  className='w-16 rounded-md border-gray-300 border-1 focus:border-indigo-500 focus:ring-indigo-500 text-xs h-6'
+                />
+              </div>
+              <button
+                type='button'
+                onClick={onRemove}
+                className='text-gray-400 hover:text-red-500 transition-colors p-1 -mr-1'
+                title='Xóa câu hỏi'
+              >
+                <FiTrash2 className='w-4 h-4' />
+              </button>
             </div>
           </div>
         </div>

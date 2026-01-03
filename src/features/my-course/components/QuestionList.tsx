@@ -98,18 +98,10 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions = [], onChange })
     <div className='space-y-4'>
       <div className='flex justify-between items-center mb-2'>
         <h3 className='text-lg font-medium text-gray-900'>Danh sách câu hỏi</h3>
-        <button
-          type='button'
-          onClick={addQuestion}
-          className='inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-        >
-          <FiPlus className='-ml-0.5 mr-1.5 h-4 w-4' />
-          Thêm câu hỏi
-        </button>
       </div>
 
       {questions.length === 0 ? (
-        <div className='text-center py-12 border-2 border-dashed border-gray-300 rounded-lg'>
+        <div className='text-center py-12 border-2 border-dashed border-gray-300 rounded-sm'>
           <svg
             className='mx-auto h-12 w-12 text-gray-400'
             fill='none'
@@ -164,6 +156,16 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions = [], onChange })
           </SortableContext>
         </DndContext>
       )}
+      <div className='mt-6 flex justify-center'>
+        <button
+          type='button'
+          onClick={addQuestion}
+          className='inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+        >
+          <FiPlus className='-ml-1 mr-2 h-5 w-5' />
+          Thêm câu hỏi
+        </button>
+      </div>
     </div>
   )
 }
