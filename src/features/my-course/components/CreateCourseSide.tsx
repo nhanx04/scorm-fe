@@ -1,99 +1,152 @@
 import React, { useState } from 'react'
 import { FiPlus, FiFolderPlus, FiShare2 } from 'react-icons/fi'
+import type { CreateScormPackageRequest, ReviewMode } from '../../../services/api'
 
-interface CourseItem {
-  id: string
-  label: string
+type Props = {
+  onCreate: (payload: CreateScormPackageRequest) => void
+  loading?: boolean
 }
 
-const CreateCourseSide = () => {
-  const [myCourses] = useState<CourseItem[]>([
-    { id: '1', label: 'Course 1' },
-    { id: '2', label: 'Course 2' },
-    { id: '3', label: 'Course 3' }
-  ])
+const CreateCourseSide: React.FC<Props> = ({ onCreate, loading }) => {
+  const [open, setOpen] = useState(false)
 
-  const [sharedCourses] = useState<CourseItem[]>([])
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [welcomeVideoUrl, setWelcomeVideoUrl] = useState('')
+  const [passingScore, setPassingScore] = useState<number>(80)
+  const [maxAttempts, setMaxAttempts] = useState<number>(3)
+  const [reviewMode, setReviewMode] = useState<ReviewMode>('REVIEW_WITH_ANSWERS')
 
   const handleCreateCourse = () => {
-    console.log('Create new course')
-    // TODO: Implement create course logic
+    setOpen((v) => !v)
   }
 
-  const handleNewFolder = () => {
-    console.log('Create new folder')
-    // TODO: Implement new folder logic
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const payload: CreateScormPackageRequest = {
+      title: title.trim() || 'Untitled',
+      description: description.trim() || undefined,
+      welcomeVideoUrl: welcomeVideoUrl.trim() || undefined,
+      passingScore,
+      maxAttempts,
+      reviewMode,
+      themeJson: JSON.stringify({ primaryColor: '#10b981' }),
+      questions: []
+    }
+    onCreate(payload)
+    setOpen(false)
   }
 
   return (
-    <aside className='h-full border-r border-gray-200 p-6'>
+    <aside className='h-full border-r border-gray-200 p-6 overflow-auto'>
       {/* Create Course Button */}
       <div className='flex justify-center'>
         <button
           onClick={handleCreateCourse}
-          className='w-60 flex items-center justify-center gap-2 bg-teal-500 hover:bg-emerald-600 text-white font-medium py-2.5 px-4 rounded-full transition-colors duration-200 shadow-sm mb-8'
+          className='w-60 flex items-center justify-center gap-2 bg-teal-500 hover:bg-emerald-600 text-white font-medium py-2.5 px-4 rounded-full transition-colors duration-200 shadow-sm mb-4 disabled:opacity-60'
+          disabled={!!loading}
         >
           <FiPlus size={18} />
-          <span>Create course</span>
+          <span>{open ? 'Close' : 'Create course'}</span>
         </button>
       </div>
 
-      {/* My Courses Section */}
+      {open && (
+        <form onSubmit={handleSubmit} className='mb-8 rounded-lg bg-white p-4 shadow-sm space-y-3'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className='mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500'
+              placeholder='Course title'
+              required
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className='mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500'
+              placeholder='Short description'
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>Welcome video URL</label>
+            <input
+              value={welcomeVideoUrl}
+              onChange={(e) => setWelcomeVideoUrl(e.target.value)}
+              className='mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500'
+              placeholder='https://...'
+            />
+          </div>
+
+          <div className='grid grid-cols-2 gap-3'>
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>Passing score</label>
+              <input
+                type='number'
+                min={0}
+                max={100}
+                value={passingScore}
+                onChange={(e) => setPassingScore(Number(e.target.value))}
+                className='mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500'
+              />
+            </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>Max attempts</label>
+              <input
+                type='number'
+                min={1}
+                value={maxAttempts}
+                onChange={(e) => setMaxAttempts(Number(e.target.value))}
+                className='mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500'
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>Review mode</label>
+            <select
+              value={reviewMode}
+              onChange={(e) => setReviewMode(e.target.value as ReviewMode)}
+              className='mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500'
+            >
+              <option value='NO_REVIEW'>No review</option>
+              <option value='REVIEW_WITHOUT_ANSWERS'>Review without answers</option>
+              <option value='REVIEW_WITH_ANSWERS'>Review with answers</option>
+            </select>
+          </div>
+
+          <button
+            type='submit'
+            disabled={!!loading}
+            className='w-full rounded-md bg-emerald-600 hover:bg-emerald-700 text-white py-2 text-sm font-medium disabled:opacity-60'
+          >
+            {loading ? 'Creating...' : 'Create'}
+          </button>
+        </form>
+      )}
+
+      {/* Placeholder sections kept for UI parity */}
       <div className='mb-8'>
         <div className='flex items-center gap-2 mb-4'>
           <FiFolderPlus size={20} className='text-gray-600' />
           <h3 className='text-gray-900 font-semibold'>My courses</h3>
-          <span className='ml-auto bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full'>
-            {myCourses.length}
-          </span>
         </div>
-
-        {/* New Folder Option */}
-        <button
-          onClick={handleNewFolder}
-          className='w-full flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors duration-150 text-sm'
-        >
-          <FiFolderPlus size={16} />
-          <span>New folder</span>
-        </button>
-
-        {/* Course List */}
-        <div className='mt-2 space-y-1'>
-          {myCourses.map((course) => (
-            <button
-              key={course.id}
-              className='w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors duration-150 text-sm'
-            >
-              {course.label}
-            </button>
-          ))}
-        </div>
+        <p className='text-gray-500 text-sm'>Use the form above to create a course.</p>
       </div>
 
-      {/* Shared Courses Section */}
       <div>
         <div className='flex items-center gap-2 mb-4'>
           <FiShare2 size={20} className='text-gray-600' />
           <h3 className='text-gray-900 font-semibold'>Shared courses</h3>
-          <span className='ml-auto bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full'>
-            {sharedCourses.length}
-          </span>
         </div>
-
-        {/* Empty State */}
-        {sharedCourses.length === 0 && <p className='text-gray-500 text-sm px-3 py-2'>No shared courses yet</p>}
-
-        {/* Shared Course List */}
-        <div className='space-y-1'>
-          {sharedCourses.map((course) => (
-            <button
-              key={course.id}
-              className='w-full text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors duration-150 text-sm'
-            >
-              {course.label}
-            </button>
-          ))}
-        </div>
+        <p className='text-gray-500 text-sm px-1'>No shared courses yet</p>
       </div>
     </aside>
   )

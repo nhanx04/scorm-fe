@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import CourseCard from './CourseCard'
 
@@ -12,37 +12,14 @@ export type Course = {
   tags?: string[]
 }
 
-const mockCourses: Course[] = [
-  {
-    id: 'c1',
-    title: 'Cours sans titre',
-    description: 'Modified: Nov 5, 2025',
-    imageUrl: 'https://images.pexels.com/photos/34491460/pexels-photo-34491460.jpeg',
-    modifiedAt: '2025-11-05'
-  },
-  {
-    id: 'c2',
-    title: 'How to report a bug',
-    description: 'Modified: Sep 15, 2025',
-    imageUrl: 'https://images.pexels.com/photos/3184429/pexels-photo-3184429.jpeg',
-    modifiedAt: '2025-09-15'
-  },
-  {
-    id: 'c3',
-    title: 'Authoring tool guide',
-    description: 'Course template',
-    imageUrl: 'https://images.pexels.com/photos/34390984/pexels-photo-34390984.jpeg',
-    modifiedAt: '2025-11-01'
-  }
-]
-
 type SortKey = 'recently-modified' | 'oldest' | 'title-asc' | 'title-desc'
 
 type Props = {
-  courses?: Course[]
+  courses: Course[]
+  loading?: boolean
 }
 
-const CourseList: React.FC<Props> = ({ courses = mockCourses }) => {
+const CourseList: React.FC<Props> = ({ courses, loading }) => {
   const [q, setQ] = useState('')
   const [sort, setSort] = useState<SortKey>('recently-modified')
 
@@ -101,6 +78,10 @@ const CourseList: React.FC<Props> = ({ courses = mockCourses }) => {
           </select>
         </label>
       </div>
+
+      {loading && <div className='text-sm text-gray-500 mb-4'>Loading...</div>}
+
+      {!loading && visible.length === 0 && <div className='text-sm text-gray-500'>No courses yet</div>}
 
       {/* List view */}
       <div className='space-y-4'>
