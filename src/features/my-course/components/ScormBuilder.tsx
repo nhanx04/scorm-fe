@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { FiPlus, FiSave, FiDownload } from 'react-icons/fi'
+import MediaInput from './MediaInput'
 import type { CreateScormPackageRequest, ReviewMode } from '../../../services/api'
 import QuestionList from './QuestionList'
 
@@ -155,16 +156,13 @@ const ScormBuilder: React.FC<Props> = ({ initialData, onSubmit, loading }) => {
               </select>
             </div>
 
-            <div>
-              <label className='block text-lg font-medium text-blue-950'>Video chào mừng (URL)</label>
-              <input
-                type='url'
-                value={payload.welcomeVideoUrl || ''}
-                onChange={(e) => handleChange('welcomeVideoUrl', e.target.value)}
-                className='mt-1 block w-full rounded-sm border-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2.5 px-3.5'
-                placeholder='https://example.com/video.mp4'
-              />
-            </div>
+            <MediaInput
+              type='video'
+              value={payload.welcomeVideoUrl || ''}
+              onChange={(url) => handleChange('welcomeVideoUrl', url)}
+              label='Video chào mừng (URL)'
+              placeholder='Nhập URL video hoặc chọn từ thư viện'
+            />
           </div>
 
           <div className='pt-2'>

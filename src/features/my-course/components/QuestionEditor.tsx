@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { FiPlus, FiTrash2, FiX, FiChevronDown, FiChevronUp, FiMenu, FiImage } from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiX, FiChevronDown, FiChevronUp, FiMenu } from 'react-icons/fi'
+import MediaInput from './MediaInput'
 import type { QuestionType, CreateScormPackageRequest } from '../../../services/api'
 
 type Question = NonNullable<CreateScormPackageRequest['questions']>[0]
@@ -111,37 +112,13 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                   className='w-full rounded-sm border-gray-400 border-1 focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3.5 bg-white/80'
                 />
 
-                {/* Image URL Input */}
-                <div className='space-y-1'>
-                  <div className='flex items-center gap-2 text-xs text-gray-500'>
-                    <FiImage className='w-3.5 h-3.5 text-gray-400' />
-                    <span>Hình ảnh đáp án (tùy chọn)</span>
-                  </div>
-                  <div className='flex gap-2'>
-                    <input
-                      type='url'
-                      value={answer.imageUrl || ''}
-                      onChange={(e) => updateAnswer(index, { imageUrl: e.target.value })}
-                      className='flex-1 rounded-sm border-gray-200 border-1 focus:border-indigo-400 focus:ring-indigo-400 text-sm py-1.5 px-3 bg-white/80'
-                      placeholder='https://example.com/image.jpg'
-                    />
-                  </div>
-                  {answer.imageUrl && (
-                    <div className='mt-1'>
-                      <div className='w-full max-w-xs border border-gray-400 rounded-sm overflow-hidden bg-white p-1'>
-                        <img
-                          src={answer.imageUrl}
-                          alt='Xem trước đáp án'
-                          className='w-full h-auto max-h-32 object-contain'
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <MediaInput
+                  type='image'
+                  value={answer.imageUrl || ''}
+                  onChange={(url) => updateAnswer(index, { imageUrl: url })}
+                  label='Hình ảnh đáp án (tùy chọn)'
+                  placeholder='Nhập URL hoặc chọn ảnh'
+                />
               </div>
 
               {isMatching && (
@@ -234,8 +211,14 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
               <FiChevronDown className='w-4 h-4' />
             </button>
           )}
-          <button type='button' onClick={onRemove} className='text-gray-400 hover:text-red-500 p-1' title='Xóa câu hỏi'>
-            <FiTrash2 className='w-4 h-4' />
+          <button
+            type='button'
+            onClick={onRemove}
+            className='inline-flex items-center gap-1 px-2.5 py-1.5 border border-red-600 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-sm transition-colors'
+            title='Xóa câu hỏi'
+          >
+            <FiTrash2 className='w-3.5 h-3.5' />
+            <span>Xóa</span>
           </button>
         </div>
       </div>
@@ -252,38 +235,13 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                 placeholder='Nhập nội dung câu hỏi...'
               />
 
-              {/* Image URL Input */}
-              <div className='space-y-1'>
-                <div className='flex items-center gap-2 text-sm text-gray-600'>
-                  <FiImage className='w-4 h-4 text-gray-400' />
-                  <span>Hình ảnh minh họa (URL)</span>
-                </div>
-                <div className='flex gap-2'>
-                  <input
-                    type='url'
-                    value={question.imageUrl || ''}
-                    onChange={(e) => updateQuestion({ imageUrl: e.target.value })}
-                    className='flex-1 rounded-sm border-gray-300 border-1 focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3.5'
-                    placeholder='https://example.com/image.jpg'
-                  />
-                </div>
-                {question.imageUrl && (
-                  <div className='mt-2'>
-                    <div className='text-xs text-gray-500 mb-1'>Xem trước:</div>
-                    <div className='w-full max-w-xs border place-items-center border-gray-400 rounded-sm overflow-hidden'>
-                      <img
-                        src={question.imageUrl}
-                        alt='Xem trước câu hỏi'
-                        className='w-full h-auto max-h-48 object-contain bg-gray-50 p-2'
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+              <MediaInput
+                type='image'
+                value={question.imageUrl || ''}
+                onChange={(url) => updateQuestion({ imageUrl: url })}
+                label='Hình ảnh minh họa (tùy chọn)'
+                placeholder='Nhập URL hoặc chọn ảnh'
+              />
             </div>
           </div>
 
@@ -307,7 +265,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
             </div>
           </div>
 
-          <div className='flex items-center justify-between text-xs text-gray-500'>
+          <div className='flex items-center justify-between text-lg text-gray-500'>
             <div>
               <span className='font-medium'>Loại câu hỏi:</span>{' '}
               <select
@@ -326,7 +284,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
                     ]
                   })
                 }
-                className='border-0 p-0 text-xs text-indigo-600 bg-transparent focus:ring-0 focus:ring-offset-0'
+                className='border-0 p-0 text-lg text-indigo-600 bg-transparent focus:ring-0 focus:ring-offset-0'
               >
                 <option value='MULTIPLE_CHOICE'>Trắc nghiệm</option>
                 <option value='TRUE_FALSE'>Đúng/Sai</option>
