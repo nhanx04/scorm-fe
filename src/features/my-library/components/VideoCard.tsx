@@ -5,7 +5,7 @@ export type Video = {
   id: string
   title: string
   embedUrl: string
-  source: 'youtube' | 'vimeo' | 'other'
+  source?: 'youtube' | 'vimeo' | 'other'
   addedAt: string
   thumbnail?: string
 }
@@ -30,25 +30,31 @@ function getVideoThumbnail(embedUrl: string, source: string): string {
       return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
     }
   }
-  return 'https://via.placeholder.com/320x180?text=Video'
+  // fallback thành hình vuông xám
+  return ''
 }
 
-const VideoCard: React.FC<Props> = ({
-  id,
-  title,
-  embedUrl,
-  source,
-  addedAt,
-  thumbnail,
-  onDelete
-}) => {
+const VideoCard: React.FC<Props> = ({ id, title, embedUrl, source, addedAt, thumbnail, onDelete }) => {
   const thumbnailUrl = thumbnail || getVideoThumbnail(embedUrl, source)
 
   return (
     <div className='rounded-lg border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow'>
       {/* Video thumbnail */}
       <div className='relative h-48 bg-gray-100 overflow-hidden group'>
-        <img src={thumbnailUrl} alt={title} className='w-full h-full object-cover' />
+        {thumbnailUrl ? (
+          <img src={thumbnailUrl} alt={title} className='w-full h-full object-cover' />
+        ) : (
+          <div className='w-full h-full bg-gray-200 flex items-center justify-center'>
+            <svg className='w-12 h-12 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={1.5}
+                d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'
+              />
+            </svg>
+          </div>
+        )}
         {/* Play button overlay */}
         <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center'>
           <div className='w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
@@ -102,4 +108,3 @@ const VideoCard: React.FC<Props> = ({
 }
 
 export default VideoCard
-

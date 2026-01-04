@@ -1,35 +1,9 @@
-import React, { useState, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import ImageCard from './ImageCard'
 import UploadModal from './UploadModal'
 import type { Image } from './ImageCard'
-
-const mockImages: Image[] = [
-  {
-    id: 'img1',
-    name: 'snapchat_TLA3NIBO0TIK.webp',
-    url: 'https://images.pexels.com/photos/34491460/pexels-photo-34491460.jpeg',
-    size: 53248,
-    uploadedAt: '2025-11-05',
-    dimensions: { width: 1600, height: 1000 }
-  },
-  {
-    id: 'img2',
-    name: 'team-collaboration.jpg',
-    url: 'https://images.pexels.com/photos/3184429/pexels-photo-3184429.jpeg',
-    size: 125000,
-    uploadedAt: '2025-11-04',
-    dimensions: { width: 1920, height: 1080 }
-  },
-  {
-    id: 'img3',
-    name: 'workspace.png',
-    url: 'https://images.pexels.com/photos/34390984/pexels-photo-34390984.jpeg',
-    size: 89500,
-    uploadedAt: '2025-11-01',
-    dimensions: { width: 1280, height: 720 }
-  }
-]
+import { mediaApi } from '../../../services/api'
 
 type SortKey = 'recently-added' | 'oldest' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc'
 
@@ -37,11 +11,62 @@ type Props = {
   images?: Image[]
 }
 
-const ImageList: React.FC<Props> = ({ images = mockImages }) => {
+type ImageUploadResponse = {
+  id: number
+  name: string
+  url: string
+  size: number
+  width?: number | null
+  height?: number | null
+  createdAt: string
+}
+
+const ImageList: React.FC<Props> = () => {
   const [q, setQ] = useState('')
   const [sort, setSort] = useState<SortKey>('recently-added')
-  const [localImages, setLocalImages] = useState(images)
+  const [localImages, setLocalImages] = useState<Image[]>([])
   const [isUploadOpen, setIsUploadOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // Fetch images from backend on mount
+  useEffect(() => {
+    const fetchImages = async () => {
+      setIsLoading(true)
+      setError('')
+      try {
+        const res = await mediaApi.getImages()
+        const imgs: Image[] = res.data.map((i) => ({
+          id: String(i.id),
+          name: i.name,
+          url: i.url,
+          size: i.size,
+          uploadedAt: i.createdAt,
+          dimensions: i.width && i.height ? { width: i.width, height: i.height } : undefined
+        }))
+        setLocalImages(imgs)
+      } catch (e: any) {
+        setError(e?.response?.data || e?.message || 'Load images failed')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchImages()
+  }, [])
+
+  const handleUploaded = (img: ImageUploadResponse) => {
+    const newImage: Image = {
+      id: String(img.id),
+      name: img.name,
+      url: img.url,
+      size: img.size ?? 0,
+      uploadedAt: img.createdAt,
+      dimensions: img.width && img.height ? { width: img.width, height: img.height } : undefined
+    }
+
+    setLocalImages((prev) => [newImage, ...prev])
+  }
 
   const visible = useMemo(() => {
     let arr = localImages.filter((img) => img.name.toLowerCase().includes(q.toLowerCase()))
@@ -109,6 +134,8 @@ const ImageList: React.FC<Props> = ({ images = mockImages }) => {
         </div>
       </div>
 
+      {error && <div className='mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600'>{error}</div>}
+
       {/* Sub header */}
       <div className='mb-4 flex items-center justify-between text-sm'>
         <div className='text-gray-500'>All images</div>
@@ -130,7 +157,9 @@ const ImageList: React.FC<Props> = ({ images = mockImages }) => {
       </div>
 
       {/* Grid view */}
-      {visible.length > 0 ? (
+      {isLoading ? (
+        <div className='text-center py-12'>Loading...</div>
+      ) : visible.length > 0 ? (
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
           {visible.map((image) => (
             <ImageCard key={image.id} {...image} onDelete={handleDelete} onDownload={handleDownload} />
@@ -141,7 +170,8 @@ const ImageList: React.FC<Props> = ({ images = mockImages }) => {
           <p className='text-gray-500'>No images found</p>
         </div>
       )}
-      {isUploadOpen && <UploadModal onClose={() => setIsUploadOpen(false)} />}
+
+      {isUploadOpen && <UploadModal onClose={() => setIsUploadOpen(false)} onUploaded={handleUploaded} />}
     </div>
   )
 }

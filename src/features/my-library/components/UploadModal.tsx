@@ -1,14 +1,18 @@
 import React, { useRef, useState } from 'react'
 import { FiX, FiUploadCloud } from 'react-icons/fi'
+import { mediaApi } from '../../../services/api'
 
 type Props = {
   onClose: () => void
+  onUploaded?: (image: any) => void
 }
 
-const UploadModal: React.FC<Props> = ({ onClose }) => {
+const UploadModal: React.FC<Props> = ({ onClose, onUploaded }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragActive, setDragActive] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const [error, setError] = useState<string>('')
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -25,9 +29,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
     e.stopPropagation()
     setDragActive(false)
 
-    const files = Array.from(e.dataTransfer.files).filter((file) =>
-      file.type.startsWith('image/')
-    )
+    const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith('image/'))
 
     if (files.length > 0) {
       setUploadedFiles((prev) => [...prev, ...files])
@@ -35,9 +37,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).filter((file) =>
-      file.type.startsWith('image/')
-    )
+    const files = Array.from(e.target.files || []).filter((file) => file.type.startsWith('image/'))
 
     if (files.length > 0) {
       setUploadedFiles((prev) => [...prev, ...files])
@@ -48,10 +48,23 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleUpload = () => {
-    // TODO: Implement actual upload logic
-    console.log('Uploading files:', uploadedFiles)
-    onClose()
+  const handleUpload = async () => {
+    if (uploadedFiles.length === 0) return
+
+    setIsUploading(true)
+    setError('')
+    try {
+      // Upload lần lượt để tránh overload + dễ xử lý lỗi
+      for (const file of uploadedFiles) {
+        const res = await mediaApi.uploadFile(file)
+        onUploaded?.(res.data)
+      }
+      onClose()
+    } catch (e: any) {
+      setError(e?.response?.data || e?.message || 'Upload failed')
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   return (
@@ -60,10 +73,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
         {/* Header */}
         <div className='flex items-center justify-between p-6 border-b border-gray-200'>
           <h2 className='text-lg font-semibold text-gray-900'>Upload Images</h2>
-          <button
-            onClick={onClose}
-            className='p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors'
-          >
+          <button onClick={onClose} className='p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors'>
             <FiX size={24} />
           </button>
         </div>
@@ -79,9 +89,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
-                  dragActive
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+                  dragActive ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50 hover:border-gray-400'
                 }`}
               >
                 <FiUploadCloud className='mx-auto mb-4 text-gray-400' size={48} />
@@ -93,9 +101,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
                 >
                   Select Images
                 </button>
-                <p className='text-gray-500 text-xs mt-4'>
-                  Supported formats: JPG, PNG, GIF, WebP (Max 10MB per file)
-                </p>
+                <p className='text-gray-500 text-xs mt-4'>Supported formats: JPG, PNG, GIF, WebP (Max 10MB per file)</p>
               </div>
 
               {/* Hidden file input */}
@@ -112,9 +118,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
             <>
               {/* Uploaded files list */}
               <div className='mb-6'>
-                <h3 className='text-sm font-medium text-gray-900 mb-3'>
-                  {uploadedFiles.length} file(s) selected
-                </h3>
+                <h3 className='text-sm font-medium text-gray-900 mb-3'>{uploadedFiles.length} file(s) selected</h3>
                 <div className='space-y-2'>
                   {uploadedFiles.map((file, index) => (
                     <div
@@ -123,12 +127,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
                     >
                       <div className='flex items-center gap-3 flex-1 min-w-0'>
                         <div className='w-10 h-10 bg-gray-200 rounded flex items-center justify-center flex-shrink-0'>
-                          <svg
-                            className='w-6 h-6 text-gray-400'
-                            fill='none'
-                            stroke='currentColor'
-                            viewBox='0 0 24 24'
-                          >
+                          <svg className='w-6 h-6 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                             <path
                               strokeLinecap='round'
                               strokeLinejoin='round'
@@ -139,9 +138,7 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
                         </div>
                         <div className='flex-1 min-w-0'>
                           <p className='text-sm font-medium text-gray-900 truncate'>{file.name}</p>
-                          <p className='text-xs text-gray-500'>
-                            {(file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
+                          <p className='text-xs text-gray-500'>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                         </div>
                       </div>
                       <button
@@ -177,6 +174,8 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
         </div>
 
         {/* Footer */}
+        {/* Error message */}
+        {error && <div className='mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600'>{error}</div>}
         <div className='flex items-center justify-end gap-3 p-6 border-t border-gray-200'>
           <button
             onClick={onClose}
@@ -186,10 +185,10 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
           </button>
           <button
             onClick={handleUpload}
-            disabled={uploadedFiles.length === 0}
+            disabled={uploadedFiles.length === 0 || isUploading}
             className='px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-medium rounded-md transition-colors'
           >
-            Upload {uploadedFiles.length > 0 && `(${uploadedFiles.length})`}
+            {isUploading ? 'Uploading...' : `Upload${uploadedFiles.length > 0 ? ` (${uploadedFiles.length})` : ''}`}
           </button>
         </div>
       </div>
@@ -198,4 +197,3 @@ const UploadModal: React.FC<Props> = ({ onClose }) => {
 }
 
 export default UploadModal
-

@@ -79,3 +79,60 @@ export const scormApi = {
   getPackage: (id: number | string) => api.get(`/scorm-packages/${id}`),
   deletePackage: (id: number | string) => api.delete(`/scorm-packages/${id}`)
 }
+// --- Media APIs ---
+export const mediaApi = {
+  // Upload image -> trả về thông tin ảnh đã lưu DB
+  uploadFile: (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post<{
+      id: number
+      name: string
+      url: string
+      size: number
+      width?: number
+      height?: number
+      createdAt: string
+    }>('/media/upload', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  // Danh sách ảnh
+  getImages: () =>
+    api.get<
+      Array<{
+        id: number
+        name: string
+        url: string
+        size: number
+        width?: number
+        height?: number
+        createdAt: string
+      }>
+    >('/media/images'),
+
+  // Tạo link nhúng video
+  createVideoEmbed: (payload: { url: string; title: string }) =>
+    api.post<{
+      id: number
+      embedUrl: string
+      title: string
+      thumbnailUrl?: string
+      createdAt: string
+      updatedAt: string
+    }>('/media/video-embed', payload),
+
+  // Danh sách video nhúng
+  getVideoEmbeds: () =>
+    api.get<Array<{ id: number; embedUrl: string; originalUrl: string; createdAt: string; updatedAt: string }>>(
+      '/media/video-embeds'
+    ),
+
+  getVideoEmbed: (id: number | string) =>
+    api.get<{ id: number; embedUrl: string; createdAt: string; updatedAt: string }>(`/media/video-embed/${id}`),
+
+  deleteVideoEmbed: (id: number | string) => api.delete(`/media/video-embed/${id}`)
+}

@@ -5,11 +5,12 @@ import type { Video } from './VideoCard'
 type Props = {
   onClose: () => void
   onAdd: (video: Omit<Video, 'id'>) => void
+  defaultUrl?: string
 }
 
-const AddVideoModal: React.FC<Props> = ({ onClose, onAdd }) => {
+const AddVideoModal: React.FC<Props> = ({ onClose, onAdd, defaultUrl }) => {
   const [title, setTitle] = useState('')
-  const [embedUrl, setEmbedUrl] = useState('')
+  const [embedUrl, setEmbedUrl] = useState(defaultUrl || '')
   const [source, setSource] = useState<'youtube' | 'vimeo' | 'other'>('youtube')
   const [error, setError] = useState('')
 
