@@ -34,8 +34,15 @@ api.interceptors.response.use(
 )
 
 export type AuthResponse = {
-  accessToken: string
-  tokenType?: string
+  token: string
+  user: {
+    userId: number
+    fname: string
+    minit: string
+    lname: string
+    email: string
+    avatarUrl: string | null
+  }
 }
 
 export const authApi = {

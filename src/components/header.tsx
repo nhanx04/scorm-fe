@@ -1,10 +1,15 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import { FiBell, FiChevronDown } from 'react-icons/fi'
+import { useAuth } from '@/contexts/AuthContext'
 
 const Header: React.FC = () => {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const { user, logout } = useAuth()
+
+  const fullName = user ? [user.fname, user.minit, user.lname].filter(Boolean).join(' ') : ''
+  const initials = user ? [user.fname?.[0], user.lname?.[0]].filter(Boolean).join('').toUpperCase() : ''
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
@@ -56,15 +61,22 @@ const Header: React.FC = () => {
         </div>
 
         {/* User info */}
-        <div className='flex items-center space-x-3 cursor-pointer'>
-          <div className='text-right leading-none'>
-            <p className='text-sm font-semibold text-blue-900'>Nhan Nguyen Trong</p>
-            <p className='text-xs text-gray-500'>nhan.trong@example.com</p>
-          </div>
-          <div className='w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold'>
-            NTN
-          </div>
-          <FiChevronDown className='text-gray-500' />
+        <div className='flex items-center space-x-3'>
+          <button
+            type='button'
+            className='flex items-center space-x-3 cursor-pointer'
+            onClick={() => logout()}
+            title='Logout'
+          >
+            <div className='text-right leading-none'>
+              <p className='text-sm font-semibold text-blue-900'>{fullName}</p>
+              <p className='text-xs text-gray-500'>{user?.email}</p>
+            </div>
+            <div className='w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold'>
+              {initials}
+            </div>
+            <FiChevronDown className='text-gray-500' />
+          </button>
         </div>
       </div>
     </header>

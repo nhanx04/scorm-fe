@@ -35,8 +35,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
+import { AuthProvider } from '@/contexts/AuthContext'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
+
 export default function App() {
-  return <Outlet />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+    </QueryClientProvider>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
