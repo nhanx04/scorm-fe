@@ -5,5 +5,7 @@ export default [
   route('/home', 'routes/home.tsx'),
   route('/signup', 'routes/register.tsx'),
   route('/my-course', 'routes/my-course.tsx'),
-  route('/library', 'routes/library.tsx')
+  route('/library', 'routes/library.tsx'),
+  route('/organization', 'routes/organizations.tsx'),
+  route('/organizations/:orgId', 'routes/organization-detail.tsx')
 ] satisfies RouteConfig
