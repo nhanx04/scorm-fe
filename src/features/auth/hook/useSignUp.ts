@@ -22,7 +22,8 @@ export const useSignUp = (): UseSignUpReturn => {
       const res = await authApi.register({
         email: payload.email,
         password: payload.password,
-        fullName: `${payload.fname} ${payload.lname}`
+        fname: payload.fname,
+        lname: payload.lname
       })
       setData(res.data as unknown as SignInResponse)
     } catch (err: unknown) {
@@ -36,4 +37,3 @@ export const useSignUp = (): UseSignUpReturn => {
 
   return { loading, error, data, signUp }
 }
-

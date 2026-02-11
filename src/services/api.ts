@@ -47,7 +47,7 @@ export type AuthResponse = {
 
 export const authApi = {
   login: (payload: { email: string; password: string }) => api.post<AuthResponse>('/auth/login', payload),
-  register: (payload: { email: string; password: string; fullName: string }) =>
+  register: (payload: { email: string; password: string; fname: string; lname: string }) =>
     api.post<AuthResponse>('/auth/register', payload)
 }
 
