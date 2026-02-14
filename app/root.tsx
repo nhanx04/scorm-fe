@@ -2,6 +2,8 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 import favicon from '../src/assets/scorm-favicon.png'
 import type { Route } from './+types/root'
 import './app.css'
+// 1. Import thư viện Google OAuth
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -40,13 +42,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
 
+// Thay bằng Client ID thực tế của bạn hoặc lấy từ biến môi trường
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Outlet />
-      </AuthProvider>
-    </QueryClientProvider>
+    // 2. Bọc GoogleOAuthProvider ở ngoài cùng (hoặc bao quanh AuthProvider)
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Outlet />
+        </AuthProvider>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
   )
 }
 

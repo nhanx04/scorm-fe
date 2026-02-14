@@ -48,7 +48,11 @@ export type AuthResponse = {
 export const authApi = {
   login: (payload: { email: string; password: string }) => api.post<AuthResponse>('/auth/login', payload),
   register: (payload: { email: string; password: string; fname: string; lname: string }) =>
-    api.post<AuthResponse>('/auth/register', payload)
+    api.post<AuthResponse>('/auth/register', payload),
+
+  // THÊM DÒNG NÀY: API login bằng Google
+  // Backend cần endpoint này để nhận googleToken, verify với Google và trả về JWT
+  loginGoogle: (googleToken: string) => api.post<AuthResponse>('/auth/google', { token: googleToken })
 }
 
 export type ReviewMode = 'NO_REVIEW' | 'REVIEW_WITHOUT_ANSWERS' | 'REVIEW_WITH_ANSWERS'
