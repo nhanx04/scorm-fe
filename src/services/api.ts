@@ -52,7 +52,7 @@ export const authApi = {
 
   // THÊM DÒNG NÀY: API login bằng Google
   // Backend cần endpoint này để nhận googleToken, verify với Google và trả về JWT
-  loginGoogle: (googleToken: string) => api.post<AuthResponse>('/auth/google', { token: googleToken })
+  loginGoogle: (googleToken: string) => api.post<AuthResponse>('/auth/google-login', { token: googleToken })
 }
 
 export type ReviewMode = 'NO_REVIEW' | 'REVIEW_WITHOUT_ANSWERS' | 'REVIEW_WITH_ANSWERS'

@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { authApi } from '@/services/api'
-import { useNavigate } from 'react-router' // Hoặc dùng hook điều hướng của react-router v7
-import type { AuthResponse } from '@/services/api' // Import type từ api.ts
+import { useNavigate } from 'react-router'
 
 interface UseGoogleSignInReturn {
   loading: boolean
   error: string | null
-  loginGoogle: (accessToken: string) => Promise<void>
+  loginGoogle: (accessToken: string) => Promise<void> // Đổi tên tham số
 }
 
 export const useGoogleSignIn = (): UseGoogleSignInReturn => {
@@ -18,19 +17,25 @@ export const useGoogleSignIn = (): UseGoogleSignInReturn => {
     setLoading(true)
     setError(null)
 
+    // Xóa token cũ để đảm bảo sạch sẽ
+    localStorage.removeItem('accessToken')
+
     try {
-      // Gọi API backend của bạn để xác thực token Google
+      // Gửi access token lên backend
       const res = await authApi.loginGoogle(accessToken)
       const responseData = res.data
 
-      // Lưu token vào localStorage (giống logic trong useSignIn)
+      // Lưu token của hệ thống mình cấp
       localStorage.setItem('accessToken', responseData.token)
 
-      // Điều hướng về trang chủ hoặc trang dashboard sau khi login thành công
-      navigate('/home') // Điều chỉnh đường dẫn theo routing của bạn
+      // Lưu user info vào localStorage (nếu cần thiết cho UI hiển thị ngay)
+      localStorage.setItem('user', JSON.stringify(responseData.user))
+
+      navigate('/home') // Hoặc điều hướng về trang dashboard
     } catch (err: any) {
       console.error('Google Login Error:', err)
-      const message = err.response?.data?.message || 'Google login failed'
+      // Lấy message lỗi chi tiết từ backend
+      const message = err.response?.data?.message || 'Đăng nhập Google thất bại'
       setError(message)
     } finally {
       setLoading(false)
