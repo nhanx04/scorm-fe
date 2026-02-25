@@ -5,7 +5,10 @@ import CourseFilter from './components/CourseFilter'
 import { coursesMock } from './mock/courses.mock'
 import MainLayout from '@/layouts/main-layout'
 
+import { useNavigate } from 'react-router'
+
 const MyCourseContent: React.FC = () => {
+  const navigate = useNavigate()
   const [newCourseOpen, setNewCourseOpen] = useState<boolean>(false)
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
@@ -77,7 +80,7 @@ const MyCourseContent: React.FC = () => {
                     className='group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800'
                     onClick={() => {
                       setNewCourseOpen(false)
-                      console.log('Create from scratch')
+                      navigate('/my-course/editor')
                     }}
                     type='button'
                   >
