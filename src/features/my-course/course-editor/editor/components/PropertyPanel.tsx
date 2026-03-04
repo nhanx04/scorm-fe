@@ -4,6 +4,7 @@ import Underline from '@tiptap/extension-underline'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import { scormApi } from '@/services/api'
 import { useCourseStore } from '../store/useCourseStore'
 
 export function PropertyPanel() {
@@ -17,6 +18,7 @@ export function PropertyPanel() {
   const undo = useCourseStore((s) => s.undo)
   const redo = useCourseStore((s) => s.redo)
   const deleteElement = useCourseStore((s) => s.deleteElement)
+  const [isExporting, setIsExporting] = React.useState(false)
 
   const selectedSection = React.useMemo(() => {
     if (selectedElement?.kind !== 'section') return null
@@ -95,10 +97,30 @@ export function PropertyPanel() {
     }
   }, [editor, selectedBlockInfo, updateElement])
 
-  const onExport = () => {
-    // eslint-disable-next-line no-console
-    console.log('exportCourse()', exportCourse())
-    alert('Course JSON exported to console')
+  const onExport = async () => {
+    const exportedCourse = exportCourse()
+
+    const courseIdInput = window.prompt('Enter backend courseId to create SCORM package:')
+    const normalizedCourseId = Number.parseInt(courseIdInput?.trim() ?? '', 10)
+
+    if (!Number.isFinite(normalizedCourseId) || normalizedCourseId <= 0) {
+      alert('Invalid courseId')
+      return
+    }
+
+    try {
+      setIsExporting(true)
+      await scormApi.createCoursePackage(normalizedCourseId, {
+        packageName: exportedCourse.title || `course-${normalizedCourseId}`,
+        packageType: 'SCORM_2004'
+      })
+      alert('SCORM package created successfully')
+    } catch (error) {
+      console.error('createCoursePackage error', error)
+      alert('Failed to create SCORM package')
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   return (
@@ -211,9 +233,10 @@ export function PropertyPanel() {
         </button>
         <button
           onClick={onExport}
-          className='rounded-xl bg-green-700 px-3 py-2 text-sm font-medium text-white hover:bg-green-800'
+          disabled={isExporting}
+          className='rounded-xl bg-green-700 px-3 py-2 text-sm font-medium text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60'
         >
-          Export Package
+          {isExporting ? 'Exporting...' : 'Export Package'}
         </button>
       </div>
     </aside>

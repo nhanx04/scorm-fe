@@ -3,11 +3,13 @@ import { useDroppable, useDraggable } from '@dnd-kit/core'
 import { useCourseStore } from '../store/useCourseStore'
 import type { Page } from '../types/course'
 import { BlockView } from './BlockView'
+import { EditableText } from './EditableText'
 import { QuizBuilder } from './QuizBuilder'
 
 export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId: string; pageIndex: number }) {
   const selectElement = useCourseStore((s) => s.selectElement)
   const selected = useCourseStore((s) => s.selectedElement)
+  const updatePage = useCourseStore((s) => s.updatePage)
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: `page-drop-${page.id}`,
     data: { type: 'page-drop', pageId: page.id, sectionId }
@@ -41,8 +43,14 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
         opacity: isDragging ? 0.5 : 1
       }}
     >
-      <div className='mb-4 flex items-center justify-between'>
-        <h4 className='text-sm font-semibold text-gray-800'>{page.title}</h4>
+      <div className='mb-4 flex items-center justify-between gap-3'>
+        <EditableText
+          value={page.title}
+          onSave={(newValue) => updatePage(sectionId, page.id, { title: newValue })}
+          className='text-sm font-semibold text-gray-800'
+          inputClassName='text-sm font-semibold text-gray-800'
+          placeholder='Page title'
+        />
         <span className='rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600'>{page.pageType}</span>
       </div>
 
@@ -58,7 +66,7 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
           ) : null}
         </div>
       ) : (
-        <QuizBuilder page={page} />
+        <QuizBuilder page={page} sectionId={sectionId} />
       )}
     </div>
   )

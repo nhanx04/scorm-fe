@@ -29,7 +29,7 @@ export function BlockView({ block, pageId, blockIndex }: { block: Block; pageId:
       }}
     >
       <div className='mb-3 flex items-center justify-between'>
-        <span className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Content block</span>
+        {/* <span className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Content block</span> */}
         <button
           type='button'
           onClick={(event) => event.stopPropagation()}

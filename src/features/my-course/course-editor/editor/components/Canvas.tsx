@@ -11,7 +11,7 @@ export function Canvas() {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas-root', data: droppableData })
 
   return (
-    <main className='flex-1 overflow-y-auto bg-gray-50 p-8'>
+    <main className='flex-1 overflow-y-auto bg-gray-300 '>
       <div className='mx-auto max-w-5xl'>
         <div
           ref={setNodeRef}

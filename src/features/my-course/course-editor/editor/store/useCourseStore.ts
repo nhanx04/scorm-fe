@@ -18,6 +18,9 @@ interface CourseStore extends CourseEditorState {
   addBlock: (pageId: string) => void
   addQuestion: (pageId: string, questionType: QuestionType) => void
   updateElement: (id: string, data: Record<string, unknown>) => void
+  updateSection: (sectionId: string, data: Partial<Section>) => void
+  updatePage: (sectionId: string, pageId: string, data: Partial<Page>) => void
+  updateQuestion: (sectionId: string, pageId: string, questionId: string, data: Partial<Question>) => void
   deleteElement: (id: string) => void
   reorder: (payload: {
     type: 'sections' | 'pages' | 'blocks'
@@ -179,6 +182,36 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           })
         })
       })
+      return { ...pushHistory(state), course: next }
+    }),
+
+  updateSection: (sectionId, data) =>
+    set((state) => {
+      const next = structuredClone(state.course)
+      const section = next.sections.find((s) => s.id === sectionId)
+      if (!section) return state
+      Object.assign(section, data)
+      return { ...pushHistory(state), course: next }
+    }),
+
+  updatePage: (sectionId, pageId, data) =>
+    set((state) => {
+      const next = structuredClone(state.course)
+      const section = next.sections.find((s) => s.id === sectionId)
+      const page = section?.pages.find((p) => p.id === pageId)
+      if (!page) return state
+      Object.assign(page, data)
+      return { ...pushHistory(state), course: next }
+    }),
+
+  updateQuestion: (sectionId, pageId, questionId, data) =>
+    set((state) => {
+      const next = structuredClone(state.course)
+      const section = next.sections.find((s) => s.id === sectionId)
+      const page = section?.pages.find((p) => p.id === pageId)
+      const question = page?.quizPage?.questions.find((q) => q.id === questionId)
+      if (!question) return state
+      Object.assign(question, data)
       return { ...pushHistory(state), course: next }
     }),
 

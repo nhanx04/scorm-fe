@@ -84,8 +84,15 @@ export type CreateScormPackageRequest = {
   }>
 }
 
+export type CreateCourseScormPackageRequest = {
+  packageName: string
+  packageType: string
+}
+
 export const scormApi = {
   createPackage: (payload: CreateScormPackageRequest) => api.post('/scorm-packages', payload),
+  createCoursePackage: (courseId: number | string, payload: CreateCourseScormPackageRequest) =>
+    api.post(`/courses/${courseId}/scorm-packages`, payload),
   listPackages: () => api.get('/scorm-packages'),
   getPackage: (id: number | string) => api.get(`/scorm-packages/${id}`),
   deletePackage: (id: number | string) => api.delete(`/scorm-packages/${id}`)
