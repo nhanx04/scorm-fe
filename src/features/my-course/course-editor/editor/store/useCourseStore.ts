@@ -7,10 +7,12 @@ import type {
   Question,
   QuestionType,
   Section,
-  SelectedElement,
+  SelectedElement
 } from '../types/course'
 
 interface CourseStore extends CourseEditorState {
+  selectedBlockId: string | null
+  setSelectedBlockId: (id: string | null) => void
   addSection: () => void
   addPage: (sectionId: string, pageType?: 'CONTENT' | 'QUIZ') => void
   addBlock: (pageId: string) => void
@@ -60,25 +62,31 @@ const initialCourse: Course = {
           themeOverride: null,
           contentPage: {
             layoutType: 'SINGLE_COLUMN',
-            blocks: [{ id: uid('block'), orderIndex: 1, textHtml: '<h2>Chào mừng</h2><p>Start editing...</p>' }],
+            blocks: [{ id: uid('block'), orderIndex: 1, textHtml: '<h2>Chào mừng</h2><p>Start editing...</p>' }]
           },
-          quizPage: null,
-        },
-      ],
-    },
-  ],
+          quizPage: null
+        }
+      ]
+    }
+  ]
 }
 
 const pushHistory = (state: CourseStore): Pick<CourseStore, 'history' | 'future'> => ({
   history: [...state.history, structuredClone(state.course)],
-  future: [],
+  future: []
 })
 
 export const useCourseStore = create<CourseStore>((set, get) => ({
   course: initialCourse,
   selectedElement: null,
+  selectedBlockId: null,
   history: [],
   future: [],
+
+  setSelectedBlockId: (id) =>
+    set({
+      selectedBlockId: id
+    }),
 
   addSection: () =>
     set((state) => {
@@ -89,7 +97,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
         orderIndex: state.course.sections.length + 1,
         learningObjective: '',
         themeOverride: null,
-        pages: [],
+        pages: []
       }
       return { ...pushHistory(state), course: { ...state.course, sections: [...state.course.sections, section] } }
     }),
@@ -105,7 +113,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           pageType,
           themeOverride: null,
           contentPage: pageType === 'CONTENT' ? { layoutType: 'SINGLE_COLUMN', blocks: [] } : null,
-          quizPage: pageType === 'QUIZ' ? { passingScore: 80, attemptAllowed: 1, questions: [] } : null,
+          quizPage: pageType === 'QUIZ' ? { passingScore: 80, attemptAllowed: 1, questions: [] } : null
         }
         return { ...section, pages: [...section.pages, page] }
       })
@@ -121,10 +129,10 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           const block: Block = {
             id: uid('block'),
             orderIndex: page.contentPage.blocks.length + 1,
-            textHtml: '<p>New content block</p>',
+            textHtml: '<p>New content block</p>'
           }
           return { ...page, contentPage: { ...page.contentPage, blocks: [...page.contentPage.blocks, block] } }
-        }),
+        })
       }))
       return { ...pushHistory(state), course: { ...state.course, sections } }
     }),
@@ -144,13 +152,13 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
               questionType === 'MCQ_SINGLE' || questionType === 'MCQ_MULTI'
                 ? [
                     { id: uid('op'), label: 'Option 1', isCorrect: true },
-                    { id: uid('op'), label: 'Option 2', isCorrect: false },
+                    { id: uid('op'), label: 'Option 2', isCorrect: false }
                   ]
                 : undefined,
-            correctValue: questionType === 'TRUE_FALSE' ? true : undefined,
+            correctValue: questionType === 'TRUE_FALSE' ? true : undefined
           }
           return { ...page, quizPage: { ...page.quizPage, questions: [...page.quizPage.questions, question] } }
-        }),
+        })
       }))
       return { ...pushHistory(state), course: { ...state.course, sections } }
     }),
@@ -185,14 +193,22 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
             .map((page) => ({
               ...page,
               contentPage: page.contentPage
-                ? { ...page.contentPage, blocks: recalcOrder(page.contentPage.blocks.filter((block) => block.id !== id)) }
+                ? {
+                    ...page.contentPage,
+                    blocks: recalcOrder(page.contentPage.blocks.filter((block) => block.id !== id))
+                  }
                 : null,
               quizPage: page.quizPage
                 ? { ...page.quizPage, questions: page.quizPage.questions.filter((question) => question.id !== id) }
-                : null,
-            })),
+                : null
+            }))
         }))
-      return { ...pushHistory(state), course: { ...state.course, sections }, selectedElement: null }
+      return {
+        ...pushHistory(state),
+        course: { ...state.course, sections },
+        selectedElement: null,
+        selectedBlockId: null
+      }
     }),
 
   reorder: ({ type, sectionId, pageId, fromIndex, toIndex }) =>
@@ -250,7 +266,11 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       return { ...pushHistory(state), course: next }
     }),
 
-  selectElement: (selectedElement) => set({ selectedElement }),
+  selectElement: (selectedElement) =>
+    set({
+      selectedElement,
+      selectedBlockId: selectedElement?.kind === 'block' ? selectedElement.id : null
+    }),
 
   undo: () =>
     set((state) => {
@@ -259,8 +279,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       return {
         course: previous,
         selectedElement: null,
+        selectedBlockId: null,
         history: state.history.slice(0, -1),
-        future: [structuredClone(state.course), ...state.future],
+        future: [structuredClone(state.course), ...state.future]
       }
     }),
 
@@ -271,11 +292,11 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       return {
         course: next,
         selectedElement: null,
+        selectedBlockId: null,
         history: [...state.history, structuredClone(state.course)],
-        future: rest,
+        future: rest
       }
     }),
 
-  exportCourse: () => structuredClone(get().course),
+  exportCourse: () => structuredClone(get().course)
 }))
-

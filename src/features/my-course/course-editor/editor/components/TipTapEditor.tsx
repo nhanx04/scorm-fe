@@ -17,7 +17,7 @@ export function TipTapEditor({ value, onChange }: TipTapEditorProps) {
     editorProps: {
       attributes: {
         class:
-          'min-h-[90px] rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none'
+          'min-h-[220px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
       }
     },
     onUpdate: ({ editor: currentEditor }) => {
@@ -37,47 +37,47 @@ export function TipTapEditor({ value, onChange }: TipTapEditorProps) {
   if (!editor) return null
 
   return (
-    <div className='space-y-2'>
-      <div className='flex flex-wrap gap-1'>
+    <div className='space-y-3'>
+      <div className='flex flex-wrap gap-1 rounded-xl border border-gray-200 bg-white p-2'>
         <button
           type='button'
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`rounded border px-2 py-1 text-xs ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
+          className={`rounded-lg px-2 py-1 text-xs ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}
         >
           Bold
         </button>
         <button
           type='button'
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`rounded border px-2 py-1 text-xs ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
+          className={`rounded-lg px-2 py-1 text-xs ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}
         >
           Italic
         </button>
         <button
           type='button'
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`rounded border px-2 py-1 text-xs ${editor.isActive('underline') ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
+          className={`rounded-lg px-2 py-1 text-xs ${editor.isActive('underline') ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}
         >
           Underline
         </button>
         <button
           type='button'
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className='rounded border bg-white px-2 py-1 text-xs text-gray-700'
+          className='rounded-lg bg-gray-50 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100'
         >
           H2
         </button>
         <button
           type='button'
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className='rounded border bg-white px-2 py-1 text-xs text-gray-700'
+          className='rounded-lg bg-gray-50 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100'
         >
           List
         </button>
         <input
           type='color'
           onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
-          className='h-7 w-9 rounded border'
+          className='h-7 w-9 rounded-lg border border-gray-200'
           title='Text color'
         />
       </div>

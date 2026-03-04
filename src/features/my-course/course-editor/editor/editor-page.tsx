@@ -7,7 +7,7 @@ import { CourseDndProvider } from './dnd/DndProvider'
 export function EditorPage() {
   return (
     <CourseDndProvider>
-      <div className='flex h-full min-h-0 flex-1 overflow-hidden bg-gray-100'>
+      <div className='flex h-screen overflow-hidden bg-gray-300 font-[Inter]'>
         <Sidebar />
         <Canvas />
         <PropertyPanel />
@@ -15,4 +15,3 @@ export function EditorPage() {
     </CourseDndProvider>
   )
 }
-

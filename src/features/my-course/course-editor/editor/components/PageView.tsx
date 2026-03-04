@@ -10,12 +10,18 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
   const selected = useCourseStore((s) => s.selectedElement)
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: `page-drop-${page.id}`,
-    data: { type: 'page-drop', pageId: page.id, sectionId },
+    data: { type: 'page-drop', pageId: page.id, sectionId }
   })
 
-  const { setNodeRef: setDragRef, listeners, attributes, transform, isDragging } = useDraggable({
+  const {
+    setNodeRef: setDragRef,
+    listeners,
+    attributes,
+    transform,
+    isDragging
+  } = useDraggable({
     id: `page-${page.id}`,
-    data: { type: 'page', pageId: String(pageIndex), sectionId },
+    data: { type: 'page', pageId: String(pageIndex), sectionId }
   })
 
   const setRefs = (el: HTMLDivElement | null) => {
@@ -29,24 +35,26 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
       {...listeners}
       {...attributes}
       onClick={() => selectElement({ kind: 'page', id: page.id })}
-      className={`rounded-xl border bg-white p-4 shadow-sm ${selected?.id === page.id ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'} ${isOver ? 'border-dashed border-blue-400 bg-blue-50/40' : ''}`}
+      className={`border border-transparent bg-white p-6 transition ${selected?.id === page.id ? 'ring-2 ring-blue-500' : 'hover:border-gray-200'} ${isOver ? 'ring-2 ring-blue-400' : ''}`}
       style={{
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.5 : 1
       }}
     >
-      <div className='mb-3 flex items-center justify-between'>
+      <div className='mb-4 flex items-center justify-between'>
         <h4 className='text-sm font-semibold text-gray-800'>{page.title}</h4>
-        <span className='rounded bg-gray-100 px-2 py-1 text-xs text-gray-600'>{page.pageType}</span>
+        <span className='rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600'>{page.pageType}</span>
       </div>
 
       {page.pageType === 'CONTENT' ? (
-        <div className='space-y-2'>
+        <div className='space-y-4'>
           {page.contentPage?.blocks.map((block, idx) => (
             <BlockView key={block.id} block={block} pageId={page.id} blockIndex={idx} />
           ))}
           {page.contentPage && page.contentPage.blocks.length === 0 ? (
-            <p className='rounded border border-dashed p-3 text-xs text-gray-400'>Drag content block here</p>
+            <p className='rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-400'>
+              Drag content block here
+            </p>
           ) : null}
         </div>
       ) : (
@@ -55,4 +63,3 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
     </div>
   )
 }
-

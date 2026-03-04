@@ -11,19 +11,19 @@ export function Canvas() {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas-root', data: droppableData })
 
   return (
-    <main className='flex-1 overflow-y-auto bg-gray-100 p-6'>
+    <main className='flex-1 overflow-y-auto bg-gray-50 p-8'>
       <div className='mx-auto max-w-5xl'>
         <div
           ref={setNodeRef}
           onClick={() => selectElement({ kind: 'course', id: 'course-root' })}
-          className={`min-h-[600px] rounded-2xl border-2 border-dashed p-6 transition ${isOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 bg-white'}`}
+          className={`min-h-[600px] bg-white p-6 shadow-sm transition ${isOver ? 'ring-2 ring-blue-400' : ''}`}
         >
           {course.sections.length === 0 ? (
             <div className='flex h-[520px] items-center justify-center text-lg font-medium text-gray-300'>
               Course Content Canvas Area
             </div>
           ) : (
-            <div className='space-y-4'>
+            <div className='space-y-8'>
               {course.sections.map((section) => (
                 <SectionView key={section.id} section={section} />
               ))}

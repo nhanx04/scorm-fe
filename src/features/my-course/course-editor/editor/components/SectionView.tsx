@@ -17,13 +17,13 @@ export function SectionView({ section }: { section: Section }) {
     <section
       ref={setNodeRef}
       onClick={() => selectElement({ kind: 'section', id: section.id })}
-      className={`rounded-2xl border bg-white p-4 ${selected?.id === section.id ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'} ${isOver ? 'border-dashed border-blue-400 bg-blue-50/30' : ''}`}
+      className={`border border-transparent bg-white p-6 shadow-sm transition ${selected?.id === section.id ? 'ring-2 ring-blue-500' : 'hover:border-gray-200'} ${isOver ? 'ring-2 ring-blue-400' : ''}`}
     >
-      <div className='mb-4'>
-        <h3 className='text-base font-bold text-gray-900'>{section.title}</h3>
-        <p className='text-xs text-gray-500'>{section.description || 'No description'}</p>
+      <div className='mb-5'>
+        <h3 className='text-base font-semibold text-gray-900'>{section.title}</h3>
+        <p className='text-sm text-gray-500'>{section.description || 'No description'}</p>
       </div>
-      <div className='space-y-3'>
+      <div className='space-y-4'>
         {section.pages.map((page, idx) => (
           <PageView key={page.id} page={page} sectionId={section.id} pageIndex={idx} />
         ))}
