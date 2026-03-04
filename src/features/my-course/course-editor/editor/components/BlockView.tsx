@@ -3,6 +3,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { GripVertical } from 'lucide-react'
 import { useCourseStore } from '../store/useCourseStore'
 import type { Block } from '../types/course'
+import { buildThemeStyle } from './theme'
 
 export function BlockView({ block, pageId, blockIndex }: { block: Block; pageId: string; blockIndex: number }) {
   const selectElement = useCourseStore((s) => s.selectElement)
@@ -24,6 +25,7 @@ export function BlockView({ block, pageId, blockIndex }: { block: Block; pageId:
       }}
       className={`rounded-2xl border border-transparent bg-white p-6 shadow-sm transition ${selectedBlockId === block.id ? 'ring-2 ring-blue-500' : 'hover:ring-1 hover:ring-gray-300'}`}
       style={{
+        ...buildThemeStyle(block.themeOverride),
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         opacity: isDragging ? 0.7 : 1
       }}

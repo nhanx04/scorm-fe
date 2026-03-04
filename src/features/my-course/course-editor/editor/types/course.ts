@@ -9,12 +9,45 @@ export type QuestionType =
   | 'SHORT_ANSWER'
   | 'GROUPING'
 
-export type ThemeOverride = Record<string, unknown> | null
+export interface SpacingToken {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
+export interface ThemeTokens {
+  background?: string
+  textColor?: string
+  fontFamily?: string
+  fontSize?: number
+  fontWeight?: number
+  lineHeight?: number
+  letterSpacing?: number
+  padding?: SpacingToken
+  margin?: SpacingToken
+  borderRadius?: number
+  borderWidth?: number
+  borderColor?: string
+  shadow?: 'none' | 'sm' | 'md' | 'lg'
+  opacity?: number
+  gradient?: {
+    from: string
+    to: string
+    direction: string
+  }
+}
+
+export type ThemeOverride = {
+  tokens?: ThemeTokens
+  [key: string]: unknown
+} | null
 
 export interface Block {
   id: string
   orderIndex: number
   textHtml: string
+  themeOverride?: ThemeOverride | null
 }
 
 export interface ContentPage {
@@ -27,6 +60,7 @@ export interface Question {
   title: string
   promptHtml: string
   questionType: QuestionType
+  themeOverride?: ThemeOverride | null
   options?: { id: string; label: string; isCorrect?: boolean }[]
   correctValue?: boolean
   groups?: { id: string; title: string }[]
@@ -83,4 +117,3 @@ export interface CourseEditorState {
   history: Course[]
   future: Course[]
 }
-

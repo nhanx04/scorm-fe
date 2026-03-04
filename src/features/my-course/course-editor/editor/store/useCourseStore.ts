@@ -7,7 +7,8 @@ import type {
   Question,
   QuestionType,
   Section,
-  SelectedElement
+  SelectedElement,
+  ThemeTokens
 } from '../types/course'
 
 interface CourseStore extends CourseEditorState {
@@ -21,6 +22,7 @@ interface CourseStore extends CourseEditorState {
   updateSection: (sectionId: string, data: Partial<Section>) => void
   updatePage: (sectionId: string, pageId: string, data: Partial<Page>) => void
   updateQuestion: (sectionId: string, pageId: string, questionId: string, data: Partial<Question>) => void
+  updateElementThemeTokens: (selectedElement: SelectedElement, patch: Partial<ThemeTokens>) => void
   deleteElement: (id: string) => void
   reorder: (payload: {
     type: 'sections' | 'pages' | 'blocks'
@@ -132,7 +134,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           const block: Block = {
             id: uid('block'),
             orderIndex: page.contentPage.blocks.length + 1,
-            textHtml: '<p>New content block</p>'
+            textHtml: '<p>New content block</p>',
+            themeOverride: null
           }
           return { ...page, contentPage: { ...page.contentPage, blocks: [...page.contentPage.blocks, block] } }
         })
@@ -213,6 +216,69 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       if (!question) return state
       Object.assign(question, data)
       return { ...pushHistory(state), course: next }
+    }),
+
+  updateElementThemeTokens: (selectedElement, patch) =>
+    set((state) => {
+      if (!selectedElement) return state
+
+      const next = structuredClone(state.course)
+      const mergeTokens = (current?: { tokens?: ThemeTokens } | null) => ({
+        ...(current ?? {}),
+        tokens: {
+          ...(current?.tokens ?? {}),
+          ...patch
+        }
+      })
+
+      if (selectedElement.kind === 'course' && selectedElement.id === 'course-root') {
+        return state
+      }
+
+      if (selectedElement.kind === 'section') {
+        const section = next.sections.find((s) => s.id === selectedElement.id)
+        if (!section) return state
+        section.themeOverride = mergeTokens(section.themeOverride)
+        return { ...pushHistory(state), course: next }
+      }
+
+      if (selectedElement.kind === 'page') {
+        for (const section of next.sections) {
+          const page = section.pages.find((p) => p.id === selectedElement.id)
+          if (page) {
+            page.themeOverride = mergeTokens(page.themeOverride)
+            return { ...pushHistory(state), course: next }
+          }
+        }
+        return state
+      }
+
+      if (selectedElement.kind === 'block') {
+        for (const section of next.sections) {
+          for (const page of section.pages) {
+            const block = page.contentPage?.blocks.find((b) => b.id === selectedElement.id)
+            if (block) {
+              block.themeOverride = mergeTokens(block.themeOverride)
+              return { ...pushHistory(state), course: next }
+            }
+          }
+        }
+        return state
+      }
+
+      if (selectedElement.kind === 'question') {
+        for (const section of next.sections) {
+          for (const page of section.pages) {
+            const question = page.quizPage?.questions.find((q) => q.id === selectedElement.id)
+            if (question) {
+              question.themeOverride = mergeTokens(question.themeOverride)
+              return { ...pushHistory(state), course: next }
+            }
+          }
+        }
+      }
+
+      return state
     }),
 
   deleteElement: (id) =>

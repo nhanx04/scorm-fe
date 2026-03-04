@@ -1,11 +1,8 @@
 import React from 'react'
-import { Color } from '@tiptap/extension-color'
-import Underline from '@tiptap/extension-underline'
-import { TextStyle } from '@tiptap/extension-text-style'
-import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
 import { scormApi } from '@/services/api'
 import { useCourseStore } from '../store/useCourseStore'
+import { DesignTab } from './DesignTab'
+import { TipTapEditor } from './TipTapEditor'
 
 export function PropertyPanel() {
   const selectedElement = useCourseStore((s) => s.selectedElement)
@@ -55,18 +52,7 @@ export function PropertyPanel() {
     return null
   }, [course.sections])
 
-  const editor = useEditor({
-    extensions: [StarterKit, Underline, TextStyle, Color],
-    content: '',
-    editorProps: {
-      attributes: {
-        class:
-          'min-h-[240px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-      }
-    },
-    immediatelyRender: false
-  })
-
+  const [activeTab, setActiveTab] = React.useState<'content' | 'design'>('content')
   const hasAutoSelectedRef = React.useRef(false)
 
   React.useEffect(() => {
@@ -77,25 +63,6 @@ export function PropertyPanel() {
       hasAutoSelectedRef.current = true
     }
   }, [firstBlockInfo, selectElement, selectedBlockId, setSelectedBlockId])
-
-  React.useEffect(() => {
-    if (editor && selectedBlockInfo) {
-      editor.commands.setContent(selectedBlockInfo.block.textHtml || '', { emitUpdate: false })
-    }
-  }, [editor, selectedBlockInfo])
-
-  React.useEffect(() => {
-    if (!editor) return
-    const onUpdate = () => {
-      if (selectedBlockInfo) {
-        updateElement(selectedBlockInfo.block.id, { textHtml: editor.getHTML() })
-      }
-    }
-    editor.on('update', onUpdate)
-    return () => {
-      editor.off('update', onUpdate)
-    }
-  }, [editor, selectedBlockInfo, updateElement])
 
   const onExport = async () => {
     const exportedCourse = exportCourse()
@@ -125,91 +92,73 @@ export function PropertyPanel() {
 
   return (
     <aside className='sticky top-0 h-screen w-[360px] overflow-y-auto border-l border-gray-100 bg-white p-5'>
-      <h3 className='text-sm font-semibold text-gray-800'>Properties</h3>
-
-      {selectedSection ? (
-        <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
-          <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Section settings</p>
-          <input
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-            value={selectedSection.title}
-            onChange={(e) => updateElement(selectedSection.id, { title: e.target.value })}
-            placeholder='Section title'
-          />
-          <textarea
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-            value={selectedSection.description}
-            onChange={(e) => updateElement(selectedSection.id, { description: e.target.value })}
-            placeholder='Section description'
-          />
+      <div className='flex items-center justify-between'>
+        <h3 className='text-sm font-semibold text-gray-800'>Properties</h3>
+        <div className='rounded-lg border border-gray-200 p-0.5'>
+          <button
+            onClick={() => setActiveTab('content')}
+            className={`rounded-md px-2 py-1 text-xs ${activeTab === 'content' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}
+          >
+            Content
+          </button>
+          <button
+            onClick={() => setActiveTab('design')}
+            className={`rounded-md px-2 py-1 text-xs ${activeTab === 'design' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}
+          >
+            Design
+          </button>
         </div>
-      ) : null}
+      </div>
 
-      {selectedPage ? (
-        <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
-          <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Page settings</p>
-          <input
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-            value={selectedPage.title}
-            onChange={(e) => updateElement(selectedPage.id, { title: e.target.value })}
-            placeholder='Page title'
-          />
-        </div>
-      ) : null}
-
-      <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
-        <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Block editor</p>
-        {!selectedBlockInfo || !editor ? (
-          <p className='text-sm text-gray-400'>Select a block to edit</p>
-        ) : (
-          <>
-            <div className='flex flex-wrap gap-1 rounded-xl border border-gray-200 bg-white p-2'>
-              <button
-                type='button'
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                className={`rounded-lg px-2 py-1 text-xs ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}
-              >
-                Bold
-              </button>
-              <button
-                type='button'
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={`rounded-lg px-2 py-1 text-xs ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}
-              >
-                Italic
-              </button>
-              <button
-                type='button'
-                onClick={() => editor.chain().focus().toggleUnderline().run()}
-                className={`rounded-lg px-2 py-1 text-xs ${editor.isActive('underline') ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}
-              >
-                Underline
-              </button>
-              <button
-                type='button'
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className='rounded-lg bg-gray-50 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100'
-              >
-                H2
-              </button>
-              <button
-                type='button'
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className='rounded-lg bg-gray-50 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100'
-              >
-                List
-              </button>
+      {activeTab === 'content' ? (
+        <>
+          {selectedSection ? (
+            <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
+              <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Section settings</p>
               <input
-                type='color'
-                onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
-                className='h-7 w-9 rounded-lg border border-gray-200'
-                title='Text color'
+                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                value={selectedSection.title}
+                onChange={(e) => updateElement(selectedSection.id, { title: e.target.value })}
+                placeholder='Section title'
+              />
+              <textarea
+                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                value={selectedSection.description}
+                onChange={(e) => updateElement(selectedSection.id, { description: e.target.value })}
+                placeholder='Section description'
               />
             </div>
-            <EditorContent editor={editor} />
-          </>
-        )}
-      </div>
+          ) : null}
+
+          {selectedPage ? (
+            <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
+              <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Page settings</p>
+              <input
+                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                value={selectedPage.title}
+                onChange={(e) => updateElement(selectedPage.id, { title: e.target.value })}
+                placeholder='Page title'
+              />
+            </div>
+          ) : null}
+
+          <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
+            <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Block editor</p>
+            {!selectedBlockInfo ? (
+              <p className='text-sm text-gray-400'>Select a block to edit</p>
+            ) : (
+              <TipTapEditor
+                value={selectedBlockInfo.block.textHtml || ''}
+                onChange={(html) => updateElement(selectedBlockInfo.block.id, { textHtml: html })}
+              />
+            )}
+          </div>
+        </>
+      ) : (
+        <div className='mt-5 rounded-2xl bg-gray-50 p-4'>
+          <DesignTab />
+        </div>
+      )}
 
       <div className='mt-6 grid grid-cols-2 gap-2'>
         <button onClick={undo} className='rounded-xl bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700'>

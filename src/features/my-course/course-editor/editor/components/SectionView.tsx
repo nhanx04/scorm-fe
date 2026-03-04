@@ -4,6 +4,7 @@ import type { Section } from '../types/course'
 import { useCourseStore } from '../store/useCourseStore'
 import { EditableText } from './EditableText'
 import { PageView } from './PageView'
+import { buildThemeStyle } from './theme'
 
 export function SectionView({ section }: { section: Section }) {
   const selectElement = useCourseStore((s) => s.selectElement)
@@ -20,6 +21,7 @@ export function SectionView({ section }: { section: Section }) {
       ref={setNodeRef}
       onClick={() => selectElement({ kind: 'section', id: section.id })}
       className={`border border-transparent bg-white p-6 shadow-sm transition ${selected?.id === section.id ? 'ring-2 ring-blue-500' : 'hover:border-gray-200'} ${isOver ? 'ring-2 ring-blue-400' : ''}`}
+      style={buildThemeStyle(section.themeOverride)}
     >
       <div className='mb-5 space-y-1'>
         <EditableText

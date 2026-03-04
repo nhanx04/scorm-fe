@@ -1,10 +1,10 @@
-import React from 'react'
 import { useDroppable, useDraggable } from '@dnd-kit/core'
 import { useCourseStore } from '../store/useCourseStore'
 import type { Page } from '../types/course'
 import { BlockView } from './BlockView'
 import { EditableText } from './EditableText'
 import { QuizBuilder } from './QuizBuilder'
+import { buildThemeStyle } from './theme'
 
 export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId: string; pageIndex: number }) {
   const selectElement = useCourseStore((s) => s.selectElement)
@@ -39,6 +39,7 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
       onClick={() => selectElement({ kind: 'page', id: page.id })}
       className={`border border-transparent bg-white p-6 transition ${selected?.id === page.id ? 'ring-2 ring-blue-500' : 'hover:border-gray-200'} ${isOver ? 'ring-2 ring-blue-400' : ''}`}
       style={{
+        ...buildThemeStyle(page.themeOverride),
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         opacity: isDragging ? 0.5 : 1
       }}

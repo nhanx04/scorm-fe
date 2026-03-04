@@ -1,6 +1,7 @@
 import type { Page, Question } from '../types/course'
 import { useCourseStore } from '../store/useCourseStore'
 import { EditableText } from './EditableText'
+import { buildThemeStyle } from './theme'
 
 function QuestionView({ question, sectionId, pageId }: { question: Question; sectionId: string; pageId: string }) {
   const selectElement = useCourseStore((s) => s.selectElement)
@@ -9,6 +10,7 @@ function QuestionView({ question, sectionId, pageId }: { question: Question; sec
   return (
     <div
       className='rounded-md border border-gray-200 bg-white p-3'
+      style={buildThemeStyle(question.themeOverride)}
       onClick={() => selectElement({ kind: 'question', id: question.id, pageId })}
     >
       <EditableText
