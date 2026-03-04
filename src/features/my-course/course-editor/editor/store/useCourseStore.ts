@@ -13,7 +13,15 @@ import type {
 
 interface CourseStore extends CourseEditorState {
   selectedBlockId: string | null
+  selectedElementIds: string[]
+  lockedElementIds: string[]
+  canvasZoom: number
   setSelectedBlockId: (id: string | null) => void
+  toggleElementSelection: (id: string) => void
+  clearSelection: () => void
+  groupSelectedElements: () => void
+  toggleElementLock: (id: string) => void
+  setCanvasZoom: (zoom: number) => void
   addSection: () => void
   addPage: (sectionId: string, pageType?: 'CONTENT' | 'QUIZ') => void
   addBlock: (pageId: string) => void
@@ -23,6 +31,7 @@ interface CourseStore extends CourseEditorState {
   updatePage: (sectionId: string, pageId: string, data: Partial<Page>) => void
   updateQuestion: (sectionId: string, pageId: string, questionId: string, data: Partial<Question>) => void
   updateElementThemeTokens: (selectedElement: SelectedElement, patch: Partial<ThemeTokens>) => void
+  updateElementLayoutMeta: (selectedElement: SelectedElement, patch: Record<string, unknown>) => void
   deleteElement: (id: string) => void
   reorder: (payload: {
     type: 'sections' | 'pages' | 'blocks'
@@ -85,6 +94,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   course: initialCourse,
   selectedElement: null,
   selectedBlockId: null,
+  selectedElementIds: [],
+  lockedElementIds: [],
+  canvasZoom: 1,
   history: [],
   future: [],
 
@@ -92,6 +104,52 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
     set({
       selectedBlockId: id
     }),
+
+  toggleElementSelection: (id) =>
+    set((state) => ({
+      selectedElementIds: state.selectedElementIds.includes(id)
+        ? state.selectedElementIds.filter((item) => item !== id)
+        : [...state.selectedElementIds, id]
+    })),
+
+  clearSelection: () => set({ selectedElementIds: [] }),
+
+  groupSelectedElements: () =>
+    set((state) => {
+      if (state.selectedElementIds.length < 2) return state
+      const next = structuredClone(state.course)
+      const groupId = uid('group')
+      next.sections.forEach((section) => {
+        if (state.selectedElementIds.includes(section.id)) {
+          section.layoutMeta = { ...(section.layoutMeta ?? {}), groupId }
+        }
+        section.pages.forEach((page) => {
+          if (state.selectedElementIds.includes(page.id)) {
+            page.layoutMeta = { ...(page.layoutMeta ?? {}), groupId }
+          }
+          page.contentPage?.blocks.forEach((block) => {
+            if (state.selectedElementIds.includes(block.id)) {
+              block.layoutMeta = { ...(block.layoutMeta ?? {}), groupId }
+            }
+          })
+          page.quizPage?.questions.forEach((question) => {
+            if (state.selectedElementIds.includes(question.id)) {
+              question.layoutMeta = { ...(question.layoutMeta ?? {}), groupId }
+            }
+          })
+        })
+      })
+      return { ...pushHistory(state), course: next }
+    }),
+
+  toggleElementLock: (id) =>
+    set((state) => ({
+      lockedElementIds: state.lockedElementIds.includes(id)
+        ? state.lockedElementIds.filter((item) => item !== id)
+        : [...state.lockedElementIds, id]
+    })),
+
+  setCanvasZoom: (zoom) => set({ canvasZoom: Math.max(0.25, Math.min(2, zoom)) }),
 
   addSection: () =>
     set((state) => {
@@ -274,6 +332,56 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
               question.themeOverride = mergeTokens(question.themeOverride)
               return { ...pushHistory(state), course: next }
             }
+          }
+        }
+      }
+
+      return state
+    }),
+
+  updateElementLayoutMeta: (selectedElement, patch) =>
+    set((state) => {
+      if (!selectedElement || selectedElement.kind === 'course') return state
+      const next = structuredClone(state.course)
+      const mergeLayout = (current?: unknown) => ({ ...((current as object | undefined) ?? {}), ...patch })
+
+      if (selectedElement.kind === 'section') {
+        const section = next.sections.find((s) => s.id === selectedElement.id)
+        if (!section) return state
+        section.layoutMeta = mergeLayout(section.layoutMeta)
+        return { ...pushHistory(state), course: next }
+      }
+
+      if (selectedElement.kind === 'page') {
+        for (const section of next.sections) {
+          const page = section.pages.find((p) => p.id === selectedElement.id)
+          if (page) {
+            page.layoutMeta = mergeLayout(page.layoutMeta)
+            return { ...pushHistory(state), course: next }
+          }
+        }
+        return state
+      }
+
+      if (selectedElement.kind === 'block') {
+        for (const section of next.sections) {
+          for (const page of section.pages) {
+            const block = page.contentPage?.blocks.find((b) => b.id === selectedElement.id)
+            if (block) {
+              block.layoutMeta = mergeLayout(block.layoutMeta)
+              return { ...pushHistory(state), course: next }
+            }
+          }
+        }
+        return state
+      }
+
+      for (const section of next.sections) {
+        for (const page of section.pages) {
+          const question = page.quizPage?.questions.find((q) => q.id === selectedElement.id)
+          if (question) {
+            question.layoutMeta = mergeLayout(question.layoutMeta)
+            return { ...pushHistory(state), course: next }
           }
         }
       }

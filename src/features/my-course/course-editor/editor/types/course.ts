@@ -43,15 +43,41 @@ export type ThemeOverride = {
   [key: string]: unknown
 } | null
 
+export type LayoutMode = 'flow' | 'absolute'
+export type LayoutType = 'column' | 'row' | 'grid' | 'free'
+
+export interface LayoutMeta {
+  position?: 'absolute'
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  rotation?: number
+  zIndex?: number
+  textAlign?: 'left' | 'center' | 'right' | 'justify'
+  verticalAlign?: 'top' | 'middle' | 'bottom'
+  maxWidth?: number
+  objectFit?: 'cover' | 'contain' | 'fill'
+  locked?: boolean
+  groupId?: string | null
+}
+
 export interface Block {
   id: string
   orderIndex: number
   textHtml: string
+  imageUrl?: string
   themeOverride?: ThemeOverride | null
+  layoutMode?: LayoutMode
+  layoutMeta?: LayoutMeta
 }
 
 export interface ContentPage {
   layoutType: string
+  layoutMode?: LayoutMode
+  textHtml?: string
+  layoutMeta?: LayoutMeta
+  grid?: { columns: number; gap: number }
   blocks: Block[]
 }
 
@@ -59,8 +85,11 @@ export interface Question {
   id: string
   title: string
   promptHtml: string
+  textHtml?: string
   questionType: QuestionType
   themeOverride?: ThemeOverride | null
+  layoutMode?: LayoutMode
+  layoutMeta?: LayoutMeta
   options?: { id: string; label: string; isCorrect?: boolean }[]
   correctValue?: boolean
   groups?: { id: string; title: string }[]
@@ -70,15 +99,23 @@ export interface Question {
 export interface QuizPage {
   passingScore: number
   attemptAllowed: number
+  textHtml?: string
+  layoutMode?: LayoutMode
+  layoutMeta?: LayoutMeta
+  layoutType?: LayoutType
   questions: Question[]
 }
 
 export interface Page {
   id: string
   title: string
+  textHtml?: string
   orderIndex: number
   pageType: PageType
   themeOverride: ThemeOverride
+  layoutMode?: LayoutMode
+  layoutType?: LayoutType
+  layoutMeta?: LayoutMeta
   contentPage: ContentPage | null
   quizPage: QuizPage | null
 }
@@ -87,9 +124,13 @@ export interface Section {
   id: string
   title: string
   description: string
+  textHtml?: string
   orderIndex: number
   learningObjective: string
   themeOverride: ThemeOverride
+  layoutMode?: LayoutMode
+  layoutType?: LayoutType
+  layoutMeta?: LayoutMeta
   pages: Page[]
 }
 

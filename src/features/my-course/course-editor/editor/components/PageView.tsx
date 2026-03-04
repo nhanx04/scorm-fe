@@ -4,12 +4,13 @@ import type { Page } from '../types/course'
 import { BlockView } from './BlockView'
 import { EditableText } from './EditableText'
 import { QuizBuilder } from './QuizBuilder'
-import { buildThemeStyle } from './theme'
+import { buildLayoutStyle, buildThemeStyle } from './theme'
 
 export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId: string; pageIndex: number }) {
   const selectElement = useCourseStore((s) => s.selectElement)
   const selected = useCourseStore((s) => s.selectedElement)
   const updatePage = useCourseStore((s) => s.updatePage)
+  const toggleElementSelection = useCourseStore((s) => s.toggleElementSelection)
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: `page-drop-${page.id}`,
     data: { type: 'page-drop', pageId: page.id, sectionId }
@@ -36,12 +37,18 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
       ref={setRefs}
       {...listeners}
       {...attributes}
-      onClick={() => selectElement({ kind: 'page', id: page.id })}
+      onClick={(event) => {
+        event.stopPropagation()
+        selectElement({ kind: 'page', id: page.id })
+        if (event.shiftKey) toggleElementSelection(page.id)
+      }}
       className={`border border-transparent bg-white p-6 transition ${selected?.id === page.id ? 'ring-2 ring-blue-500' : 'hover:border-gray-200'} ${isOver ? 'ring-2 ring-blue-400' : ''}`}
       style={{
         ...buildThemeStyle(page.themeOverride),
+        ...buildLayoutStyle(page.layoutMode, page.layoutMeta),
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        opacity: isDragging ? 0.5 : 1
+        opacity: isDragging ? 0.5 : 1,
+        minHeight: page.layoutMeta?.height ? `${page.layoutMeta.height}px` : undefined
       }}
     >
       <div className='mb-4 flex items-center justify-between gap-3'>

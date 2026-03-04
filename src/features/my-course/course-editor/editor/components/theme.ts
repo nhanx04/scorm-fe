@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { ThemeOverride, ThemeTokens } from '../types/course'
+import type { LayoutMeta, LayoutMode, ThemeOverride, ThemeTokens } from '../types/course'
 
 const shadowMap: Record<NonNullable<ThemeTokens['shadow']>, string> = {
   none: 'none',
@@ -49,3 +49,15 @@ export function buildThemeStyle(themeOverride?: ThemeOverride): CSSProperties {
   return style
 }
 
+export function buildLayoutStyle(layoutMode?: LayoutMode, layoutMeta?: LayoutMeta): CSSProperties {
+  if (layoutMode !== 'absolute') return {}
+  const style: CSSProperties = { position: 'absolute' }
+  if (typeof layoutMeta?.x === 'number') style.left = `${layoutMeta.x}px`
+  if (typeof layoutMeta?.y === 'number') style.top = `${layoutMeta.y}px`
+  if (typeof layoutMeta?.width === 'number') style.width = `${layoutMeta.width}px`
+  if (typeof layoutMeta?.height === 'number') style.height = `${layoutMeta.height}px`
+  if (typeof layoutMeta?.zIndex === 'number') style.zIndex = layoutMeta.zIndex
+  if (typeof layoutMeta?.rotation === 'number') style.transform = `rotate(${layoutMeta.rotation}deg)`
+  if (layoutMeta?.textAlign) style.textAlign = layoutMeta.textAlign
+  return style
+}

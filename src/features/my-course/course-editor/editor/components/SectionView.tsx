@@ -4,12 +4,13 @@ import type { Section } from '../types/course'
 import { useCourseStore } from '../store/useCourseStore'
 import { EditableText } from './EditableText'
 import { PageView } from './PageView'
-import { buildThemeStyle } from './theme'
+import { buildLayoutStyle, buildThemeStyle } from './theme'
 
 export function SectionView({ section }: { section: Section }) {
   const selectElement = useCourseStore((s) => s.selectElement)
   const selected = useCourseStore((s) => s.selectedElement)
   const updateSection = useCourseStore((s) => s.updateSection)
+  const toggleElementSelection = useCourseStore((s) => s.toggleElementSelection)
   const droppableData = React.useMemo(() => ({ type: 'section-drop', sectionId: section.id }), [section.id])
   const { setNodeRef, isOver } = useDroppable({
     id: `section-drop-${section.id}`,
@@ -19,9 +20,18 @@ export function SectionView({ section }: { section: Section }) {
   return (
     <section
       ref={setNodeRef}
-      onClick={() => selectElement({ kind: 'section', id: section.id })}
+      onClick={(event) => {
+        event.stopPropagation()
+        selectElement({ kind: 'section', id: section.id })
+        if (event.shiftKey) toggleElementSelection(section.id)
+      }}
       className={`border border-transparent bg-white p-6 shadow-sm transition ${selected?.id === section.id ? 'ring-2 ring-blue-500' : 'hover:border-gray-200'} ${isOver ? 'ring-2 ring-blue-400' : ''}`}
-      style={buildThemeStyle(section.themeOverride)}
+      style={{
+        ...buildThemeStyle(section.themeOverride),
+        ...buildLayoutStyle(section.layoutMode, section.layoutMeta),
+        minHeight: section.layoutMeta?.height ? `${section.layoutMeta.height}px` : 'auto',
+        maxWidth: section.layoutMeta?.maxWidth ? `${section.layoutMeta.maxWidth}px` : undefined
+      }}
     >
       <div className='mb-5 space-y-1'>
         <EditableText

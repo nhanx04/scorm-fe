@@ -1,17 +1,24 @@
 import type { Page, Question } from '../types/course'
 import { useCourseStore } from '../store/useCourseStore'
 import { EditableText } from './EditableText'
-import { buildThemeStyle } from './theme'
+import { buildLayoutStyle, buildThemeStyle } from './theme'
 
 function QuestionView({ question, sectionId, pageId }: { question: Question; sectionId: string; pageId: string }) {
   const selectElement = useCourseStore((s) => s.selectElement)
   const updateQuestion = useCourseStore((s) => s.updateQuestion)
+  const toggleElementSelection = useCourseStore((s) => s.toggleElementSelection)
 
   return (
     <div
       className='rounded-md border border-gray-200 bg-white p-3'
-      style={buildThemeStyle(question.themeOverride)}
-      onClick={() => selectElement({ kind: 'question', id: question.id, pageId })}
+      style={{
+        ...buildThemeStyle(question.themeOverride),
+        ...buildLayoutStyle(question.layoutMode, question.layoutMeta)
+      }}
+      onClick={(event) => {
+        selectElement({ kind: 'question', id: question.id, pageId })
+        if (event.shiftKey) toggleElementSelection(question.id)
+      }}
     >
       <EditableText
         value={question.title}

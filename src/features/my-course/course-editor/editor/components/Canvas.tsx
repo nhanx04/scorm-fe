@@ -6,6 +6,7 @@ import { SectionView } from './SectionView'
 export function Canvas() {
   const course = useCourseStore((s) => s.course)
   const selectElement = useCourseStore((s) => s.selectElement)
+  const canvasZoom = useCourseStore((s) => s.canvasZoom)
 
   const droppableData = React.useMemo(() => ({ type: 'canvas' }), [])
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas-root', data: droppableData })
@@ -16,7 +17,8 @@ export function Canvas() {
         <div
           ref={setNodeRef}
           onClick={() => selectElement({ kind: 'course', id: 'course-root' })}
-          className={`min-h-[600px] bg-white p-6 shadow-sm transition ${isOver ? 'ring-2 ring-blue-400' : ''}`}
+          className={`min-h-[600px] origin-top bg-white p-6 shadow-sm transition ${isOver ? 'ring-2 ring-blue-400' : ''}`}
+          style={{ transform: `scale(${canvasZoom})` }}
         >
           {course.sections.length === 0 ? (
             <div className='flex h-[520px] items-center justify-center text-lg font-medium text-gray-300'>

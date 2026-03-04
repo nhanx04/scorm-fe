@@ -3,6 +3,7 @@ import { scormApi } from '@/services/api'
 import { useCourseStore } from '../store/useCourseStore'
 import { DesignTab } from './DesignTab'
 import { TipTapEditor } from './TipTapEditor'
+import { LayoutTab } from './LayoutTab'
 
 export function PropertyPanel() {
   const selectedElement = useCourseStore((s) => s.selectedElement)
@@ -52,7 +53,7 @@ export function PropertyPanel() {
     return null
   }, [course.sections])
 
-  const [activeTab, setActiveTab] = React.useState<'content' | 'design'>('content')
+  const [activeTab, setActiveTab] = React.useState<'content' | 'design' | 'layout'>('content')
   const hasAutoSelectedRef = React.useRef(false)
 
   React.useEffect(() => {
@@ -107,6 +108,12 @@ export function PropertyPanel() {
           >
             Design
           </button>
+          <button
+            onClick={() => setActiveTab('layout')}
+            className={`rounded-md px-2 py-1 text-xs ${activeTab === 'layout' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}
+          >
+            Layout
+          </button>
         </div>
       </div>
 
@@ -154,9 +161,13 @@ export function PropertyPanel() {
             )}
           </div>
         </>
-      ) : (
+      ) : activeTab === 'design' ? (
         <div className='mt-5 rounded-2xl bg-gray-50 p-4'>
           <DesignTab />
+        </div>
+      ) : (
+        <div className='mt-5 rounded-2xl bg-gray-50 p-4'>
+          <LayoutTab />
         </div>
       )}
 
