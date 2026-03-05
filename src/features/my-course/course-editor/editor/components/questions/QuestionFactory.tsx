@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Question, QuestionTemplateData } from '../../types/course'
+import { TipTapEditor } from '../TipTapEditor'
 import {
   FillInTheBlankPreview,
   MatchingPreview,
@@ -19,22 +20,24 @@ function BaseEditor({
   return (
     <div className='space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-lg'>
       <p className='text-xs font-semibold uppercase tracking-wide text-slate-500'>Question content</p>
-      <label className='space-y-1 text-xs text-slate-600'>
-        Prompt
-        <input
-          className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'
-          value={data.prompt}
-          onChange={(e) => onChange({ prompt: e.target.value })}
+      <div className='space-y-1'>
+        <p className='text-xs text-slate-600'>Prompt</p>
+        <TipTapEditor
+          value={data.prompt || '<p></p>'}
+          onChange={(html) => onChange({ prompt: html })}
+          minHeightClassName='min-h-[120px]'
+          placeholder='Write question prompt...'
         />
-      </label>
-      <label className='space-y-1 text-xs text-slate-600'>
-        Explanation
-        <input
-          className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-200'
-          value={data.explanation ?? ''}
-          onChange={(e) => onChange({ explanation: e.target.value })}
+      </div>
+      <div className='space-y-1'>
+        <p className='text-xs text-slate-600'>Explanation</p>
+        <TipTapEditor
+          value={data.explanation || '<p></p>'}
+          onChange={(html) => onChange({ explanation: html })}
+          minHeightClassName='min-h-[80px]'
+          placeholder='Add explanation (optional)...'
         />
-      </label>
+      </div>
     </div>
   )
 }
@@ -58,13 +61,16 @@ function McqEditor({
         <div className='space-y-2'>
           {options.map((o) => (
             <div key={o.id} className='flex gap-2'>
-              <input
-                className='flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition duration-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200'
-                value={o.label}
-                onChange={(e) =>
-                  onChange({ options: options.map((x) => (x.id === o.id ? { ...x, label: e.target.value } : x)) })
-                }
-              />
+              <div className='flex-1'>
+                <TipTapEditor
+                  value={o.label || '<p></p>'}
+                  onChange={(html) =>
+                    onChange({ options: options.map((x) => (x.id === o.id ? { ...x, label: html } : x)) })
+                  }
+                  minHeightClassName='min-h-[70px]'
+                  placeholder={`Option ${o.value}`}
+                />
+              </div>
               <button
                 className='rounded-xl border px-3 text-xs font-semibold transition duration-200 hover:shadow'
                 onClick={() => {
@@ -169,15 +175,15 @@ function FillBlankEditor({
   return (
     <div className='space-y-3'>
       <BaseEditor data={data} onChange={onChange} />
-      <label className='block rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-600'>
-        Sentence (use ____ for blanks)
-        <textarea
-          className='mt-1 w-full rounded-xl border px-2 py-1 text-sm'
-          rows={3}
-          value={data.sentence ?? ''}
-          onChange={(e) => onChange({ sentence: e.target.value })}
+      <div className='rounded-2xl border border-slate-200 bg-white p-4'>
+        <p className='mb-2 text-xs text-slate-600'>Sentence (use ____ for blanks)</p>
+        <TipTapEditor
+          value={data.sentence || '<p></p>'}
+          onChange={(html) => onChange({ sentence: html })}
+          minHeightClassName='min-h-[90px]'
+          placeholder='Type sentence with ____ placeholders'
         />
-      </label>
+      </div>
     </div>
   )
 }
@@ -197,19 +203,19 @@ function MatchingEditor({
         <p className='mb-2 text-xs text-slate-500'>Pairs</p>
         {pairs.map((p) => (
           <div key={p.id} className='mb-2 grid grid-cols-2 gap-2'>
-            <input
-              className='rounded-xl border px-2 py-1 text-sm'
-              value={p.term}
-              onChange={(e) =>
-                onChange({ pairs: pairs.map((x) => (x.id === p.id ? { ...x, term: e.target.value } : x)) })
-              }
+            <TipTapEditor
+              value={p.term || '<p></p>'}
+              onChange={(html) => onChange({ pairs: pairs.map((x) => (x.id === p.id ? { ...x, term: html } : x)) })}
+              minHeightClassName='min-h-[70px]'
+              placeholder='Matching term'
             />
-            <input
-              className='rounded-xl border px-2 py-1 text-sm'
-              value={p.definition}
-              onChange={(e) =>
-                onChange({ pairs: pairs.map((x) => (x.id === p.id ? { ...x, definition: e.target.value } : x)) })
+            <TipTapEditor
+              value={p.definition || '<p></p>'}
+              onChange={(html) =>
+                onChange({ pairs: pairs.map((x) => (x.id === p.id ? { ...x, definition: html } : x)) })
               }
+              minHeightClassName='min-h-[70px]'
+              placeholder='Matching definition'
             />
           </div>
         ))}

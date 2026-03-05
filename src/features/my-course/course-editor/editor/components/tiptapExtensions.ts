@@ -4,6 +4,7 @@ import Highlight from '@tiptap/extension-highlight'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
+import Placeholder from '@tiptap/extension-placeholder'
 import Strike from '@tiptap/extension-strike'
 import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
@@ -118,7 +119,7 @@ const TextClass = Extension.create({
   }
 })
 
-export const tiptapExtensions = [
+export const tiptapExtensions = (placeholder = 'Type here...') => [
   StarterKit,
   Underline,
   Strike,
@@ -127,6 +128,7 @@ export const tiptapExtensions = [
   TextStyle,
   Color,
   Highlight,
+  Placeholder.configure({ placeholder }),
   FontFamily,
   FontSize,
   LineHeight,

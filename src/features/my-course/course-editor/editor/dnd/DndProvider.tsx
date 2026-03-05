@@ -13,6 +13,7 @@ interface DragMeta {
     | 'section'
     | 'page'
     | 'block'
+    | 'question'
   sectionId?: string
   pageId?: string
   questionType?: 'MCQ_SINGLE' | 'MCQ_MULTI' | 'TRUE_FALSE'
@@ -90,6 +91,17 @@ export function CourseDndProvider({ children }: { children: React.ReactNode }) {
       } else {
         moveBlockToPage(active.id as string, activeMeta.pageId, overMeta.pageId, Number(overMeta.sectionId))
       }
+      return
+    }
+
+    if (activeMeta.type === 'question' && overMeta.type === 'question' && activeMeta.pageId && overMeta.pageId) {
+      if (activeMeta.pageId !== overMeta.pageId) return
+      reorder({
+        type: 'questions',
+        pageId: activeMeta.pageId,
+        fromIndex: Number(activeMeta.sectionId),
+        toIndex: Number(overMeta.sectionId)
+      })
     }
   }
 

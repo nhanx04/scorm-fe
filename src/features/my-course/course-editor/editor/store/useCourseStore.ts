@@ -34,7 +34,7 @@ interface CourseStore extends CourseEditorState {
   updateElementLayoutMeta: (selectedElement: SelectedElement, patch: Record<string, unknown>) => void
   deleteElement: (id: string) => void
   reorder: (payload: {
-    type: 'sections' | 'pages' | 'blocks'
+    type: 'sections' | 'pages' | 'blocks' | 'questions'
     sectionId?: string
     pageId?: string
     fromIndex: number
@@ -477,6 +477,16 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
             const [moved] = page.contentPage.blocks.splice(fromIndex, 1)
             page.contentPage.blocks.splice(toIndex, 0, moved)
             page.contentPage.blocks = recalcOrder(page.contentPage.blocks)
+          }
+        })
+      }
+      if (type === 'questions' && pageId) {
+        next.sections.forEach((s) => {
+          const page = s.pages.find((p) => p.id === pageId)
+          if (page?.quizPage) {
+            const [moved] = page.quizPage.questions.splice(fromIndex, 1)
+            page.quizPage.questions.splice(toIndex, 0, moved)
+            page.quizPage.questions = recalcOrder(page.quizPage.questions)
           }
         })
       }

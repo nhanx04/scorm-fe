@@ -10,19 +10,23 @@ function Card({ children }: { children: React.ReactNode }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className='overflow-hidden rounded-2xl border bg-background shadow-lg'
+      className='overflow-hidden rounded-2xl border border-current/10 bg-transparent'
     >
       {children}
     </motion.div>
   )
 }
 
+function RichText({ html, className }: { html: string; className?: string }) {
+  return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />
+}
+
 function Header({ title, badge, gradient }: { title: string; badge: string; gradient: string }) {
   return (
-    <div className='border-b bg-white/80 p-6'>
+    <div className='border-b border-current/10 bg-transparent p-6'>
       <div className={`-mx-6 -mt-6 mb-4 h-2 ${gradient}`} />
       <div className='mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold'>{badge}</div>
-      <h4 className='text-xl font-bold text-slate-900'>{title}</h4>
+      <RichText html={title} className='prose prose-sm max-w-none text-xl font-bold text-slate-900' />
     </div>
   )
 }
@@ -46,7 +50,7 @@ export function McqSinglePreview({ data }: { data: QuestionTemplateData }) {
             >
               {selected === o.value ? <Circle className='h-3 w-3 fill-current' /> : <Circle className='h-3 w-3' />}
             </span>
-            <span>{o.label}</span>
+            <RichText html={o.label} className='prose prose-sm max-w-none' />
           </motion.button>
         ))}
       </div>
@@ -77,7 +81,7 @@ export function McqMultiplePreview({ data }: { data: QuestionTemplateData }) {
             >
               {selected.includes(o.value) ? <Check className='h-3 w-3' /> : null}
             </span>
-            <span>{o.label}</span>
+            <RichText html={o.label} className='prose prose-sm max-w-none' />
           </motion.button>
         ))}
       </div>
@@ -119,7 +123,7 @@ export function ShortAnswerPreview({ data }: { data: QuestionTemplateData }) {
       <Header title={data.prompt} badge='Short Answer' gradient='bg-gradient-to-r from-amber-500 to-orange-500' />
       <div className='space-y-3 p-6'>
         <input
-          className='w-full rounded-2xl border border-amber-200 bg-white px-4 py-3 text-sm shadow-inner outline-none transition duration-200 focus:ring-2 focus:ring-amber-500'
+          className='w-full rounded-2xl border border-amber-300/60 bg-transparent px-4 py-3 text-sm outline-none transition duration-200 focus:ring-2 focus:ring-amber-500'
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
@@ -141,7 +145,7 @@ export function FillInTheBlankPreview({ data }: { data: QuestionTemplateData }) 
       <div className='flex flex-wrap items-center gap-2 p-6 text-sm text-slate-800'>
         {parts.map((part, i) => (
           <React.Fragment key={i}>
-            {part}
+            <RichText html={part} className='prose prose-sm inline max-w-none' />
             {i < parts.length - 1 ? (
               <input
                 className='inline-flex min-w-[120px] rounded-lg border border-teal-200 bg-slate-50 px-3 py-1 outline-none transition duration-200 focus:ring-2 focus:ring-teal-500'
@@ -166,7 +170,7 @@ function DragItem({ id, label }: { id: string; label: string }) {
       {...attributes}
       animate={{ scale: isDragging ? 1.03 : 1, opacity: isDragging ? 0.85 : 1 }}
       style={{ transform: transform ? `translate3d(${transform.x}px,${transform.y}px,0)` : undefined }}
-      className='cursor-grab rounded-xl border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-medium text-purple-800 shadow-sm'
+      className='cursor-grab rounded-xl border border-purple-300/50 bg-purple-500/10 px-3 py-2 text-sm font-medium text-purple-800'
     >
       {label}
     </motion.div>
@@ -179,7 +183,7 @@ function DropZone({ id, children }: { id: string; children: React.ReactNode }) {
     <motion.div
       ref={setNodeRef}
       animate={{ scale: isOver ? 1.01 : 1 }}
-      className={`min-h-[52px] rounded-xl border p-3 transition duration-200 ${isOver ? 'border-purple-500 bg-purple-100 shadow-md shadow-purple-200/50' : 'border-slate-200 bg-white'}`}
+      className={`min-h-[52px] rounded-xl border p-3 transition duration-200 ${isOver ? 'border-purple-500 bg-purple-500/10' : 'border-slate-300/60 bg-transparent'}`}
     >
       {children}
     </motion.div>
@@ -207,7 +211,7 @@ export function MatchingPreview({ data }: { data: QuestionTemplateData }) {
             <div className='space-y-2'>
               {pairs.map((p) => (
                 <DropZone key={p.id} id={p.id}>
-                  <p className='text-xs text-slate-500'>{p.definition}</p>
+                  <RichText html={p.definition} className='prose prose-sm max-w-none text-xs text-slate-600' />
                   {matches[p.id] ? (
                     <p className='mt-1 text-sm font-medium text-purple-800'>
                       Matched: {pairs.find((x) => x.id === matches[p.id])?.term}
