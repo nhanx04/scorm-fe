@@ -5,6 +5,7 @@ import { DesignTab } from './DesignTab'
 import { TipTapEditor } from './TipTapEditor'
 import { LayoutTab } from './LayoutTab'
 import { QuestionFactory } from './questions/QuestionFactory'
+import { EditableRichText } from './EditableRichText'
 
 export function PropertyPanel() {
   const selectedElement = useCourseStore((s) => s.selectedElement)
@@ -134,17 +135,19 @@ export function PropertyPanel() {
           {selectedSection ? (
             <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
               <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Section settings</p>
-              <input
-                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+              <EditableRichText
                 value={selectedSection.title}
-                onChange={(e) => updateElement(selectedSection.id, { title: e.target.value })}
+                onChange={(html) => updateElement(selectedSection.id, { title: html })}
                 placeholder='Section title'
+                variant='sectionTitle'
+                mode='edit'
               />
-              <textarea
-                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+              <EditableRichText
                 value={selectedSection.description}
-                onChange={(e) => updateElement(selectedSection.id, { description: e.target.value })}
+                onChange={(html) => updateElement(selectedSection.id, { description: html })}
                 placeholder='Section description'
+                variant='sectionDescription'
+                mode='edit'
               />
             </div>
           ) : null}
@@ -152,11 +155,12 @@ export function PropertyPanel() {
           {selectedPage ? (
             <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
               <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Page settings</p>
-              <input
-                className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+              <EditableRichText
                 value={selectedPage.title}
-                onChange={(e) => updateElement(selectedPage.id, { title: e.target.value })}
+                onChange={(html) => updateElement(selectedPage.id, { title: html })}
                 placeholder='Page title'
+                variant='pageTitle'
+                mode='edit'
               />
             </div>
           ) : null}

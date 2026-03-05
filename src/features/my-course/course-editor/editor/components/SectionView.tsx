@@ -2,7 +2,7 @@ import React from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import type { Section } from '../types/course'
 import { useCourseStore } from '../store/useCourseStore'
-import { EditableText } from './EditableText'
+import { EditableRichText } from './EditableRichText'
 import { PageView } from './PageView'
 import { buildLayoutStyle, buildThemeStyle } from './theme'
 
@@ -34,20 +34,19 @@ export function SectionView({ section }: { section: Section }) {
       }}
     >
       <div className='mb-5 space-y-1'>
-        <EditableText
+        <EditableRichText
           value={section.title}
-          onSave={(newValue) => updateSection(section.id, { title: newValue })}
-          className='text-base font-semibold text-gray-900'
-          inputClassName='text-base font-semibold text-gray-900'
+          onChange={(html) => updateSection(section.id, { title: html })}
           placeholder='Section title'
+          variant='sectionTitle'
+          mode='edit'
         />
-        <EditableText
+        <EditableRichText
           value={section.description || ''}
-          onSave={(newValue) => updateSection(section.id, { description: newValue })}
-          className='text-sm text-gray-500'
-          inputClassName='text-sm text-gray-600'
-          multiline
+          onChange={(html) => updateSection(section.id, { description: html })}
           placeholder='Section description'
+          variant='sectionDescription'
+          mode='edit'
         />
       </div>
       <div className='space-y-4'>

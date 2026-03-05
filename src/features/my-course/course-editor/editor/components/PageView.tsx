@@ -2,7 +2,7 @@ import { useDroppable, useDraggable } from '@dnd-kit/core'
 import { useCourseStore } from '../store/useCourseStore'
 import type { Page } from '../types/course'
 import { BlockView } from './BlockView'
-import { EditableText } from './EditableText'
+import { EditableRichText } from './EditableRichText'
 import { QuizBuilder } from './QuizBuilder'
 import { buildLayoutStyle, buildThemeStyle } from './theme'
 
@@ -52,12 +52,12 @@ export function PageView({ page, sectionId, pageIndex }: { page: Page; sectionId
       }}
     >
       <div className='mb-4 flex items-center justify-between gap-3'>
-        <EditableText
+        <EditableRichText
           value={page.title}
-          onSave={(newValue) => updatePage(sectionId, page.id, { title: newValue })}
-          className='text-sm font-semibold text-gray-800'
-          inputClassName='text-sm font-semibold text-gray-800'
+          onChange={(html) => updatePage(sectionId, page.id, { title: html })}
           placeholder='Page title'
+          variant='pageTitle'
+          mode='edit'
         />
         <span className='rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600'>{page.pageType}</span>
       </div>
