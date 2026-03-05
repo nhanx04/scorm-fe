@@ -4,6 +4,7 @@ import { useCourseStore } from '../store/useCourseStore'
 import { DesignTab } from './DesignTab'
 import { TipTapEditor } from './TipTapEditor'
 import { LayoutTab } from './LayoutTab'
+import { QuestionFactory } from './questions/QuestionFactory'
 
 export function PropertyPanel() {
   const selectedElement = useCourseStore((s) => s.selectedElement)
@@ -52,6 +53,17 @@ export function PropertyPanel() {
     }
     return null
   }, [course.sections])
+
+  const selectedQuestionInfo = React.useMemo(() => {
+    if (selectedElement?.kind !== 'question') return null
+    for (const section of course.sections) {
+      for (const page of section.pages) {
+        const question = page.quizPage?.questions.find((q) => q.id === selectedElement.id)
+        if (question) return { question, sectionId: section.id, pageId: page.id }
+      }
+    }
+    return null
+  }, [course.sections, selectedElement])
 
   const [activeTab, setActiveTab] = React.useState<'content' | 'design' | 'layout'>('content')
   const hasAutoSelectedRef = React.useRef(false)
@@ -160,6 +172,33 @@ export function PropertyPanel() {
               />
             )}
           </div>
+
+          {selectedQuestionInfo ? (
+            <div className='mt-5 space-y-3 rounded-2xl bg-gray-50 p-4'>
+              <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Question template editor</p>
+              <QuestionFactory
+                question={selectedQuestionInfo.question}
+                mode='editor'
+                onChange={(templateData) =>
+                  updateElement(selectedQuestionInfo.question.id, {
+                    templateData,
+                    promptHtml: templateData.prompt
+                  })
+                }
+              />
+              <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Live preview</p>
+              <QuestionFactory
+                question={selectedQuestionInfo.question}
+                mode='preview'
+                onChange={(templateData) =>
+                  updateElement(selectedQuestionInfo.question.id, {
+                    templateData,
+                    promptHtml: templateData.prompt
+                  })
+                }
+              />
+            </div>
+          ) : null}
         </>
       ) : activeTab === 'design' ? (
         <div className='mt-5 rounded-2xl bg-gray-50 p-4'>

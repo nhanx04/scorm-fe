@@ -207,19 +207,55 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
         ...section,
         pages: section.pages.map((page) => {
           if (page.id !== pageId || !page.quizPage) return page
+          const normalizedType =
+            questionType === 'MCQ_MULTI'
+              ? 'MCQ_MULTIPLE'
+              : questionType === 'FILL_BLANK'
+                ? 'FILL_IN_THE_BLANK'
+                : questionType
+
           const question: Question = {
             id: uid('question'),
-            title: `${questionType} Question`,
-            questionType,
-            promptHtml: '<p>Question prompt...</p>',
+            title: `${normalizedType} Question`,
+            questionType: normalizedType,
+            promptHtml: 'Question prompt...',
+            templateData: {
+              prompt: 'Question prompt...',
+              options:
+                normalizedType === 'MCQ_SINGLE' || normalizedType === 'MCQ_MULTIPLE'
+                  ? [
+                      { id: uid('op'), label: 'Option 1', value: 'option_1' },
+                      { id: uid('op'), label: 'Option 2', value: 'option_2' }
+                    ]
+                  : undefined,
+              correctAnswer:
+                normalizedType === 'TRUE_FALSE'
+                  ? true
+                  : normalizedType === 'MCQ_SINGLE'
+                    ? 'option_1'
+                    : normalizedType === 'MCQ_MULTIPLE'
+                      ? ['option_1']
+                      : undefined,
+              charLimit: normalizedType === 'SHORT_ANSWER' ? 120 : undefined,
+              sentence: normalizedType === 'FILL_IN_THE_BLANK' ? 'React is a ____ library created by ____.' : undefined,
+              blanks: normalizedType === 'FILL_IN_THE_BLANK' ? ['', ''] : undefined,
+              pairs:
+                normalizedType === 'MATCHING'
+                  ? [
+                      { id: uid('pair'), term: 'HTML', definition: 'Markup' },
+                      { id: uid('pair'), term: 'CSS', definition: 'Styling' },
+                      { id: uid('pair'), term: 'JavaScript', definition: 'Logic' }
+                    ]
+                  : undefined
+            },
             options:
-              questionType === 'MCQ_SINGLE' || questionType === 'MCQ_MULTI'
+              normalizedType === 'MCQ_SINGLE' || normalizedType === 'MCQ_MULTIPLE'
                 ? [
                     { id: uid('op'), label: 'Option 1', isCorrect: true },
                     { id: uid('op'), label: 'Option 2', isCorrect: false }
                   ]
                 : undefined,
-            correctValue: questionType === 'TRUE_FALSE' ? true : undefined
+            correctValue: normalizedType === 'TRUE_FALSE' ? true : undefined
           }
           return { ...page, quizPage: { ...page.quizPage, questions: [...page.quizPage.questions, question] } }
         })

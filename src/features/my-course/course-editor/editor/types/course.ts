@@ -2,12 +2,37 @@ export type PageType = 'CONTENT' | 'QUIZ'
 
 export type QuestionType =
   | 'MCQ_SINGLE'
-  | 'MCQ_MULTI'
+  | 'MCQ_MULTIPLE'
   | 'TRUE_FALSE'
-  | 'FILL_BLANK'
-  | 'MATCHING'
   | 'SHORT_ANSWER'
+  | 'FILL_IN_THE_BLANK'
+  | 'MATCHING'
+  | 'MCQ_MULTI'
+  | 'FILL_BLANK'
   | 'GROUPING'
+
+export interface QuestionOption {
+  id: string
+  label: string
+  value: string
+}
+
+export interface MatchingPair {
+  id: string
+  term: string
+  definition: string
+}
+
+export type QuestionTemplateData = {
+  prompt: string
+  explanation?: string
+  options?: QuestionOption[]
+  correctAnswer?: string | string[] | boolean
+  charLimit?: number
+  sentence?: string
+  blanks?: string[]
+  pairs?: MatchingPair[]
+}
 
 export interface SpacingToken {
   top: number
@@ -87,6 +112,7 @@ export interface Question {
   promptHtml: string
   textHtml?: string
   questionType: QuestionType
+  templateData?: QuestionTemplateData
   themeOverride?: ThemeOverride | null
   layoutMode?: LayoutMode
   layoutMeta?: LayoutMeta

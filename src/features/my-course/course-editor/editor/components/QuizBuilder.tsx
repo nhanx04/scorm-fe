@@ -2,6 +2,7 @@ import type { Page, Question } from '../types/course'
 import { useCourseStore } from '../store/useCourseStore'
 import { EditableText } from './EditableText'
 import { buildLayoutStyle, buildThemeStyle } from './theme'
+import { QuestionFactory } from './questions/QuestionFactory'
 
 function QuestionView({ question, sectionId, pageId }: { question: Question; sectionId: string; pageId: string }) {
   const selectElement = useCourseStore((s) => s.selectElement)
@@ -28,14 +29,18 @@ function QuestionView({ question, sectionId, pageId }: { question: Question; sec
         placeholder='Question title'
       />
       <div className='mt-1 text-xs text-gray-500'>{question.questionType}</div>
-      <EditableText
-        value={question.promptHtml}
-        onSave={(newValue) => updateQuestion(sectionId, pageId, question.id, { promptHtml: newValue })}
-        className='mt-2 text-sm text-gray-700'
-        inputClassName='text-sm text-gray-700'
-        multiline
-        placeholder='Question instruction'
-      />
+      <div className='mt-3'>
+        <QuestionFactory
+          question={question}
+          mode='preview'
+          onChange={(nextTemplateData) =>
+            updateQuestion(sectionId, pageId, question.id, {
+              templateData: nextTemplateData,
+              promptHtml: nextTemplateData.prompt
+            })
+          }
+        />
+      </div>
     </div>
   )
 }
