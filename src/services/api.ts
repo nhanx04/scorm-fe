@@ -84,9 +84,31 @@ export type CreateScormPackageRequest = {
   }>
 }
 
+export type CreateCourseRequest = {
+  title: string
+  passingScore?: number
+  attemptLimit?: number
+  durationMin?: number
+  status?: string
+  textHtml?: string
+  themeOverride?: unknown
+  layoutMode?: string
+  layoutMeta?: unknown
+  extraInfor?: unknown
+  editorState?: unknown
+  editorVersion?: string
+  editorStatus?: string
+}
+
 export type CreateCourseScormPackageRequest = {
   packageName: string
   packageType: string
+  editorStateSnapshot?: unknown
+  interfaceSnapshot?: unknown
+}
+
+export const courseApi = {
+  createCourse: (payload: CreateCourseRequest) => api.post('/courses', payload)
 }
 
 export const scormApi = {
@@ -95,6 +117,7 @@ export const scormApi = {
     api.post(`/courses/${courseId}/scorm-packages`, payload),
   listPackages: () => api.get('/scorm-packages'),
   getPackage: (id: number | string) => api.get(`/scorm-packages/${id}`),
+  downloadPackage: (id: number | string) => api.get(`/scorm-packages/${id}/download`, { responseType: 'blob' }),
   deletePackage: (id: number | string) => api.delete(`/scorm-packages/${id}`)
 }
 // --- Media APIs ---
