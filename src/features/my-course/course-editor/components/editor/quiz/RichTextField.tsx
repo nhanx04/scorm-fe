@@ -16,7 +16,8 @@ const RichTextField: React.FC<Props> = ({ value, onChange, placeholder }) => {
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none min-h-[90px] rounded-lg border border-gray-300 px-3 py-2'
+        class:
+          'prose prose-sm max-w-none min-h-[90px] border-b border-gray-300 bg-transparent px-0 py-2 text-base outline-none focus-within:border-blue-500'
       }
     }
   })
@@ -32,4 +33,3 @@ const RichTextField: React.FC<Props> = ({ value, onChange, placeholder }) => {
 }
 
 export default RichTextField
-

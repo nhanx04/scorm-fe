@@ -14,11 +14,10 @@ const QuizPageEditor: React.FC<QuizPageEditorProps> = ({ page }) => {
   return (
     <div className='space-y-6 rounded-xl border border-gray-200 p-4'>
       <QuizSettings page={page} />
-      <AddQuestionModal page={page} />
       <QuestionList page={page} />
+      <AddQuestionModal page={page} />
     </div>
   )
 }
 
 export default QuizPageEditor
-

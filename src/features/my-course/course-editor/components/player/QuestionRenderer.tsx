@@ -24,7 +24,7 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
 
   return (
     <fieldset
-      className='rounded-lg border border-gray-200 p-4'
+      className='space-y-4 rounded-2xl bg-white p-6 shadow-sm transition hover:shadow-md'
       aria-label='Quiz question'
       style={{
         background: questionTheme.background,
@@ -32,13 +32,12 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
         borderRadius: questionTheme.borderRadius
       }}
     >
-      <legend
-        className='mb-3 text-sm font-semibold text-gray-800'
-        dangerouslySetInnerHTML={{ __html: question.promptHtml }}
-      />
+      <legend className='mb-2 text-base font-semibold text-gray-800'>
+        <span dangerouslySetInnerHTML={{ __html: question.promptHtml }} />
+      </legend>
 
       {(question.questionType === 'MCQ_SINGLE' || question.questionType === 'MCQ_MULTIPLE') && (
-        <div className='space-y-2'>
+        <div className='space-y-3'>
           {question.options.map((option) => {
             const selected = Array.isArray(value)
               ? value.includes(option.id)
@@ -46,7 +45,12 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
                 ? value === option.id
                 : false
             return (
-              <label key={option.id} className='flex items-start gap-2 text-sm text-gray-700'>
+              <label
+                key={option.id}
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                  selected ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300'
+                }`}
+              >
                 <input
                   type={question.questionType === 'MCQ_SINGLE' ? 'radio' : 'checkbox'}
                   name={question.id}
@@ -60,7 +64,7 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
                     }
                   }}
                 />
-                <span dangerouslySetInnerHTML={{ __html: option.labelHtml }} />
+                <span className='text-sm text-gray-700' dangerouslySetInnerHTML={{ __html: option.labelHtml }} />
               </label>
             )
           })}
@@ -68,19 +72,45 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
       )}
 
       {question.questionType === 'TRUE_FALSE' && (
-        <div className='flex gap-3 text-sm'>
-          <label className='flex items-center gap-2'>
-            <input type='radio' name={question.id} checked={value === true} onChange={() => onChange(true)} /> True
+        <div className='flex gap-3'>
+          <label
+            className={`flex flex-1 cursor-pointer items-center justify-center rounded-xl border px-4 py-3 text-sm font-medium transition ${
+              value === true
+                ? 'border-blue-400 bg-blue-50 text-blue-700'
+                : 'border-gray-200 text-gray-700 hover:border-blue-300'
+            }`}
+          >
+            <input
+              type='radio'
+              name={question.id}
+              checked={value === true}
+              onChange={() => onChange(true)}
+              className='sr-only'
+            />
+            True
           </label>
-          <label className='flex items-center gap-2'>
-            <input type='radio' name={question.id} checked={value === false} onChange={() => onChange(false)} /> False
+          <label
+            className={`flex flex-1 cursor-pointer items-center justify-center rounded-xl border px-4 py-3 text-sm font-medium transition ${
+              value === false
+                ? 'border-blue-400 bg-blue-50 text-blue-700'
+                : 'border-gray-200 text-gray-700 hover:border-blue-300'
+            }`}
+          >
+            <input
+              type='radio'
+              name={question.id}
+              checked={value === false}
+              onChange={() => onChange(false)}
+              className='sr-only'
+            />
+            False
           </label>
         </div>
       )}
 
       {question.questionType === 'SHORT_ANSWER' && (
         <input
-          className='w-full rounded border border-gray-300 px-3 py-2 text-sm'
+          className='w-full border-b border-gray-300 bg-transparent pb-2 text-sm outline-none focus:border-blue-500'
           placeholder='Your answer'
           value={typeof value === 'string' ? value : ''}
           onChange={(e) => onChange(e.target.value)}
@@ -88,10 +118,10 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
       )}
 
       {question.questionType === 'FILL_IN_THE_BLANK' && (
-        <div>
-          <div className='mb-2 text-sm text-gray-700' dangerouslySetInnerHTML={{ __html: question.sentenceHtml }} />
+        <div className='space-y-2'>
+          <div className='text-sm text-gray-700' dangerouslySetInnerHTML={{ __html: question.sentenceHtml }} />
           <input
-            className='w-full rounded border border-gray-300 px-3 py-2 text-sm'
+            className='w-full border-b border-gray-300 bg-transparent pb-2 text-sm outline-none focus:border-blue-500'
             placeholder='Fill blank'
             value={typeof value === 'string' ? value : ''}
             onChange={(e) => onChange(e.target.value)}
@@ -100,15 +130,15 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
       )}
 
       {question.questionType === 'MATCHING' && (
-        <div className='space-y-2'>
+        <div className='space-y-3'>
           {question.pairs.map((pair) => (
             <div
               key={pair.id}
-              className='grid grid-cols-1 gap-2 rounded border border-gray-200 p-2 text-sm sm:grid-cols-2'
+              className='grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-white p-3 text-sm sm:grid-cols-2'
             >
-              <span>{pair.left}</span>
+              <span className='font-medium text-gray-700'>{pair.left}</span>
               <input
-                className='rounded border border-gray-300 px-2 py-1'
+                className='border-b border-gray-300 bg-transparent pb-1 outline-none focus:border-blue-500'
                 placeholder='Type matching right value'
                 value={
                   typeof value === 'object' && !Array.isArray(value) && value !== null ? (value[pair.id] ?? '') : ''
@@ -124,7 +154,9 @@ const QuestionRenderer: React.FC<Props> = ({ question, value, checked, isCorrect
       )}
 
       {checked && (
-        <p className={`mt-3 text-sm font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+        <p
+          className={`rounded-lg px-3 py-2 text-sm font-medium ${isCorrect ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}
+        >
           {isCorrect ? 'Correct' : 'Incorrect'}
         </p>
       )}

@@ -23,31 +23,41 @@ const QuizSettings: React.FC<QuizSettingsProps> = ({ page }) => {
   }
 
   return (
-    <div className='rounded-xl border border-gray-200 bg-white p-4 shadow-sm'>
-      <h4 className='text-sm font-semibold text-gray-700'>Quiz settings</h4>
-      <div className='mt-3 grid gap-4 md:grid-cols-2'>
-        <label className='flex flex-col text-sm text-gray-600'>
-          Passing score (%)
+    <div className='rounded-2xl bg-gray-50/70 p-5'>
+      {/* Header */}
+      <div className='mb-4'>
+        <h4 className='text-base font-semibold text-gray-800'>Quiz settings</h4>
+        <p className='text-sm text-gray-500'>Configure passing score and attempt limits for this quiz</p>
+      </div>
+
+      {/* Fields */}
+      <div className='grid gap-6 md:grid-cols-2'>
+        {/* Passing Score */}
+        <div className='space-y-1'>
+          <label className='text-xs font-medium uppercase tracking-wide text-gray-500'>Passing score (%)</label>
           <input
             type='number'
             value={quizPage?.passingScore ?? 80}
             onChange={(e) => updateQuizPage({ passingScore: Number(e.target.value) })}
-            className='mt-2 rounded-lg border border-gray-300 px-3 py-2 text-sm'
+            className='w-full border-b border-gray-300 bg-transparent py-2 text-sm text-gray-800 outline-none transition focus:border-blue-500'
           />
-        </label>
-        <label className='flex flex-col text-sm text-gray-600'>
-          Attempts allowed
+          <p className='text-xs text-gray-400'>Minimum score required to pass</p>
+        </div>
+
+        {/* Attempts */}
+        <div className='space-y-1'>
+          <label className='text-xs font-medium uppercase tracking-wide text-gray-500'>Attempts allowed</label>
           <input
             type='number'
             value={quizPage?.attemptAllowed ?? 1}
             onChange={(e) => updateQuizPage({ attemptAllowed: Number(e.target.value) })}
-            className='mt-2 rounded-lg border border-gray-300 px-3 py-2 text-sm'
+            className='w-full border-b border-gray-300 bg-transparent py-2 text-sm text-gray-800 outline-none transition focus:border-blue-500'
           />
-        </label>
+          <p className='text-xs text-gray-400'>Number of times learners can retry</p>
+        </div>
       </div>
     </div>
   )
 }
 
 export default QuizSettings
-

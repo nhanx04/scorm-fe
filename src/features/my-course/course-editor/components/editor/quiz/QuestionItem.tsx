@@ -61,7 +61,11 @@ const QuestionItem: React.FC<Props> = ({ page, question, index, total }) => {
   }
 
   return (
-    <div ref={setNodeRef} style={style} className='rounded-xl border border-gray-200 bg-white p-4 shadow-sm'>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className='group space-y-4 rounded-2xl bg-white p-6 shadow-sm transition hover:shadow-md'
+    >
       <QuestionHeader
         page={page}
         question={question}
@@ -73,32 +77,36 @@ const QuestionItem: React.FC<Props> = ({ page, question, index, total }) => {
       />
 
       {expanded && (
-        <div className='space-y-4'>
+        <div className='space-y-6'>
           <div>
-            <label className='text-xs font-medium text-gray-600'>Title</label>
+            <label className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Title</label>
             <input
               value={question.title ?? ''}
               onChange={(e) => onQuestionChange({ ...question, title: e.target.value })}
-              className='mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm'
+              placeholder='Type question title...'
+              className='mt-2 w-full border-b border-gray-300 bg-transparent pb-2 text-base outline-none focus:border-blue-500'
             />
           </div>
 
           <div>
-            <label className='text-xs font-medium text-gray-600'>Prompt</label>
-            <RichTextField value={question.promptHtml} onChange={(promptHtml) => onQuestionChange({ ...question, promptHtml })} />
+            <label className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Prompt</label>
+            <RichTextField
+              value={question.promptHtml}
+              onChange={(promptHtml) => onQuestionChange({ ...question, promptHtml })}
+              placeholder='Write the question prompt...'
+            />
           </div>
 
           <div>
-            <label className='text-xs font-medium text-gray-600'>Explanation (HTML)</label>
+            <label className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Explanation</label>
             <RichTextField
               value={question.explanationHtml ?? '<p></p>'}
               onChange={(explanationHtml) => onQuestionChange({ ...question, explanationHtml })}
+              placeholder='Optional explanation after answer...'
             />
           </div>
 
-          <div className='rounded-lg border border-gray-100 bg-gray-50 p-3'>
-            {renderSpecificEditor()}
-          </div>
+          <div className='rounded-xl border border-gray-100 bg-gray-50/70 p-4'>{renderSpecificEditor()}</div>
         </div>
       )}
     </div>
@@ -106,4 +114,3 @@ const QuestionItem: React.FC<Props> = ({ page, question, index, total }) => {
 }
 
 export default QuestionItem
-

@@ -45,20 +45,22 @@ const PageRenderer: React.FC<Props> = ({ pageId, sectionId, answers, checked, co
   }
 
   return (
-    <div className='space-y-4' style={{ background: pageTheme.background, color: pageTheme.color }}>
-      {questionIds.map((id) => {
+    <div className='space-y-5' style={{ background: pageTheme.background, color: pageTheme.color }}>
+      {questionIds.map((id, index) => {
         const question = questions[id]
         if (!question) return null
         return (
-          <QuestionRenderer
-            key={id}
-            question={question}
-            value={answers[id]}
-            checked={checked[id] ?? false}
-            isCorrect={correctness[id] ?? null}
-            sectionId={sectionId}
-            onChange={(value) => onAnswerChange(id, value)}
-          />
+          <div key={id} className='space-y-2'>
+            <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Question {index + 1}</p>
+            <QuestionRenderer
+              question={question}
+              value={answers[id]}
+              checked={checked[id] ?? false}
+              isCorrect={correctness[id] ?? null}
+              sectionId={sectionId}
+              onChange={(value) => onAnswerChange(id, value)}
+            />
+          </div>
         )
       })}
     </div>
