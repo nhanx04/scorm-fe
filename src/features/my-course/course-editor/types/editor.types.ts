@@ -24,6 +24,7 @@ export interface ThemeConfig {
 
 export type Course = {
   id: string
+  serverId?: number
   title: string
   description?: string
   coverImageUrl?: string

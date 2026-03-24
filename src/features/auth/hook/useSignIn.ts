@@ -25,9 +25,11 @@ export const useSignIn = (): UseSignInReturn => {
 
       // Store token for future authenticated requests
       localStorage.setItem('accessToken', responseData.token)
+      localStorage.setItem('auth_token', responseData.token)
     } catch (err: unknown) {
       const apiErr = err as { response?: { data?: ApiError; message?: string } }
-      const message = apiErr.response?.data?.message || apiErr.response?.data || apiErr.response?.message || 'Login failed'
+      const message =
+        apiErr.response?.data?.message || apiErr.response?.data || apiErr.response?.message || 'Login failed'
       setError(typeof message === 'string' ? message : 'Login failed')
     } finally {
       setLoading(false)
@@ -36,4 +38,3 @@ export const useSignIn = (): UseSignInReturn => {
 
   return { loading, error, data, signIn }
 }
-

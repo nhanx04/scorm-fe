@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
 import EditorLayout from './components/editor/EditorLayout'
 import Sidebar from './components/editor/Sidebar'
@@ -8,11 +9,21 @@ import { loadDraft, saveDraft } from './api/editorApi'
 import { hydrateFromPayload } from './utils/hydrateFromPayload'
 
 export const EditorPage: React.FC = () => {
+  const navigate = useNavigate()
   const hydrateStore = useCourseEditorStore((state) => state.hydrateStore)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hydratingRef = useRef(true)
 
+  const hasToken =
+    typeof window !== 'undefined' && !!(localStorage.getItem('accessToken') || localStorage.getItem('token'))
+
   useEffect(() => {
+    if (!hasToken) {
+      hydratingRef.current = false
+      navigate('/')
+      return
+    }
+
     let mounted = true
 
     ;(async () => {
@@ -31,9 +42,11 @@ export const EditorPage: React.FC = () => {
     return () => {
       mounted = false
     }
-  }, [hydrateStore])
+  }, [hasToken, hydrateStore, navigate])
 
   useEffect(() => {
+    if (!hasToken) return
+
     const unsub = useCourseEditorStore.subscribe((state) => {
       if (hydratingRef.current) return
 
@@ -47,7 +60,7 @@ export const EditorPage: React.FC = () => {
       unsub()
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [])
+  }, [hasToken])
 
   return (
     <MainLayout>

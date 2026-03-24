@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { authApi } from '@/services/api'
 
@@ -21,7 +21,15 @@ type AuthState = {
 
 const STORAGE_USER_KEY = 'authUser'
 
-const AuthContext = createContext<AuthState | undefined>(undefined)
+const defaultAuthState: AuthState = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  login: async () => {},
+  logout: () => {}
+}
+
+const AuthContext = createContext<AuthState>(defaultAuthState)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -31,7 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     try {
-      const token = localStorage.getItem('accessToken')
+      const token =
+        localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('auth_token')
       const rawUser = localStorage.getItem(STORAGE_USER_KEY)
 
       if (token && rawUser) {
@@ -39,49 +48,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch {
       localStorage.removeItem('accessToken')
+      localStorage.removeItem('token')
+      localStorage.removeItem('auth_token')
       localStorage.removeItem(STORAGE_USER_KEY)
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  const login = async (email: string, password: string) => {
-    const { data } = await authApi.login({ email, password })
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const { data } = await authApi.login({ email, password })
 
-    localStorage.setItem('accessToken', data.token)
-    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(data.user))
-    setUser(data.user)
+      localStorage.setItem('accessToken', data.token)
+      localStorage.setItem('auth_token', data.token)
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(data.user))
+      setUser(data.user)
 
-    navigate('/my-course')
-  }
+      navigate('/my-course')
+    },
+    [navigate]
+  )
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('accessToken')
+    localStorage.removeItem('token')
+    localStorage.removeItem('auth_token')
     localStorage.removeItem(STORAGE_USER_KEY)
     setUser(null)
 
     const from = location.pathname
     navigate(`/login?from=${encodeURIComponent(from)}`)
-  }
+  }, [location.pathname, navigate])
 
   const value = useMemo(
     () => ({
       user,
-      isAuthenticated: !!localStorage.getItem('accessToken'),
+      isAuthenticated: !!(
+        localStorage.getItem('accessToken') ||
+        localStorage.getItem('token') ||
+        localStorage.getItem('auth_token')
+      ),
       isLoading,
       login,
       logout
     }),
-    [user, isLoading]
+    [user, isLoading, login, logout]
   )
 
   return <AuthContext.Provider value={value}>{!isLoading && children}</AuthContext.Provider>
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+export const useAuth = () => useContext(AuthContext)

@@ -19,6 +19,7 @@ export const useGoogleSignIn = (): UseGoogleSignInReturn => {
 
     // Xóa token cũ để đảm bảo sạch sẽ
     localStorage.removeItem('accessToken')
+    localStorage.removeItem('auth_token')
 
     try {
       // Gửi access token lên backend
@@ -27,6 +28,7 @@ export const useGoogleSignIn = (): UseGoogleSignInReturn => {
 
       // Lưu token của hệ thống mình cấp
       localStorage.setItem('accessToken', responseData.token)
+      localStorage.setItem('auth_token', responseData.token)
 
       // Lưu user info vào localStorage (nếu cần thiết cho UI hiển thị ngay)
       localStorage.setItem('user', JSON.stringify(responseData.user))

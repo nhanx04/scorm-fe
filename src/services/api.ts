@@ -9,10 +9,13 @@ export const api = axios.create({
   }
 })
 
+const getStoredAccessToken = () =>
+  localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('auth_token')
+
 // Attach Bearer token if exists
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken')
+    const token = getStoredAccessToken()
     if (token) {
       config.headers = config.headers ?? {}
       config.headers.Authorization = `Bearer ${token}`
@@ -22,13 +25,11 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Basic 401 handler
+// Do not auto-clear tokens on every 401.
+// Some endpoints (e.g. draft loading) may temporarily return 401 and should be handled by caller/UI.
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error?.response?.status === 401) {
-      localStorage.removeItem('accessToken')
-    }
     return Promise.reject(error)
   }
 )

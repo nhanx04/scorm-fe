@@ -4,11 +4,13 @@ export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken')
+    const token =
+      localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('auth_token')
     setIsAuthenticated(!!token)
 
     const handleStorageChange = () => {
-      const updatedToken = localStorage.getItem('accessToken')
+      const updatedToken =
+        localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('auth_token')
       setIsAuthenticated(!!updatedToken)
     }
 
@@ -21,4 +23,3 @@ export const useAuth = () => {
 
   return { isAuthenticated }
 }
-

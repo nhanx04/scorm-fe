@@ -82,7 +82,7 @@ const CourseHeader: React.FC = () => {
           >
             {collapsed ? 'Expand Header' : 'Thu gọn'}
           </button>
-          <ExportActions courseId={course.id} />
+          <ExportActions courseId={course.serverId ?? course.id} />
         </div>
 
         <div className='mx-auto mt-6 flex max-w-5xl flex-col items-center gap-6 text-center'>
