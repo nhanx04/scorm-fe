@@ -7,12 +7,11 @@ type EditorLayoutProps = {
 
 const EditorLayout: React.FC<EditorLayoutProps> = ({ sidebar, main }) => {
   return (
-    <div className='flex h-full min-h-[calc(100vh-4rem)] bg-gray-50'>
-      <aside className='w-[280px] bg-gray-100 border-r border-gray-200'>{sidebar}</aside>
-      <main className='flex-1 bg-white'>{main}</main>
+    <div className='flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-50'>
+      <aside className='h-full w-[280px] shrink-0 border-r border-gray-200 bg-gray-100'>{sidebar}</aside>
+      <main className='h-full flex-1 overflow-y-auto bg-white'>{main}</main>
     </div>
   )
 }
 
 export default EditorLayout
-

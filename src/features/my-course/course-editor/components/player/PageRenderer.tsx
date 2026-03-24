@@ -50,17 +50,17 @@ const PageRenderer: React.FC<Props> = ({ pageId, sectionId, answers, checked, co
         const question = questions[id]
         if (!question) return null
         return (
-          <div key={id} className='space-y-2'>
-            <p className='text-xs font-semibold uppercase tracking-wide text-gray-500'>Question {index + 1}</p>
-            <QuestionRenderer
-              question={question}
-              value={answers[id]}
-              checked={checked[id] ?? false}
-              isCorrect={correctness[id] ?? null}
-              sectionId={sectionId}
-              onChange={(value) => onAnswerChange(id, value)}
-            />
-          </div>
+          <QuestionRenderer
+            key={id}
+            question={question}
+            value={answers[id]}
+            checked={checked[id] ?? false}
+            isCorrect={correctness[id] ?? null}
+            sectionId={sectionId}
+            index={index}
+            total={questionIds.length}
+            onChange={(value) => onAnswerChange(id, value)}
+          />
         )
       })}
     </div>

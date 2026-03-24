@@ -15,7 +15,7 @@ const MainEditor: React.FC = () => {
         <CourseHeader />
 
         {/* PAGE EDITOR */}
-        <div className='bg-white p-3 shadow-sm border-t-1 border-gray-200'>
+        <div className='bg-white p-10 shadow-sm border-t-1 border-gray-200'>
           <PageEditor />
         </div>
       </div>

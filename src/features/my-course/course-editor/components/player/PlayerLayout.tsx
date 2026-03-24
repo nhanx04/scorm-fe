@@ -14,6 +14,7 @@ const PlayerLayout: React.FC = () => {
   const questions = useCourseEditorStore((s) => s.questions)
   const questionOrder = useCourseEditorStore((s) => s.questionOrder)
   const theme = useCourseEditorStore((s) => s.theme)
+  const course = useCourseEditorStore((s) => s.course)
 
   const orderedPageIds = useMemo(() => sectionOrder.flatMap((sid) => pageOrder[sid] ?? []), [sectionOrder, pageOrder])
   const pageToSection = useMemo(() => {
@@ -103,6 +104,27 @@ const PlayerLayout: React.FC = () => {
           {orderedPageIds.length === 0 ? 0 : cursor + 1}/{orderedPageIds.length}
         </span>
       </div>
+
+      {cursor === 0 && (
+        <section className='mb-6 space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4'>
+          <h1 className='text-center text-3xl font-extrabold uppercase tracking-wide text-gray-900'>{course.title}</h1>
+
+          <div className='overflow-hidden rounded-xl border border-dashed border-gray-300 bg-gray-100'>
+            {course.coverImageUrl ? (
+              <img src={course.coverImageUrl} alt='Course cover' className='h-52 w-full object-cover' />
+            ) : (
+              <div className='flex h-52 items-center justify-center text-sm text-gray-400'>No cover image</div>
+            )}
+          </div>
+
+          <div className='rounded-sm bg-blue-100 px-4 py-3'>
+            <p className='whitespace-pre-wrap text-sm text-gray-900'>
+              {course.description || 'Add learning objective...'}
+            </p>
+            <div className='mt-3 h-px w-full bg-blue-300' />
+          </div>
+        </section>
+      )}
 
       <div className='mb-4 text-sm text-gray-500'>
         {Object.values(sections).length > 0 ? `Sections: ${Object.values(sections).length}` : 'No sections'}

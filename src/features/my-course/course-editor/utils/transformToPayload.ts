@@ -6,6 +6,7 @@ export const transformToPayload = (state: EditorState) => {
     editorStateSnapshot: {
       title: state.course.title,
       description: state.course.description,
+      coverImageUrl: state.course.coverImageUrl,
       passingScore: state.course.passingScore,
       attemptLimit: state.course.attemptLimit,
       durationMin: state.course.durationMin,
@@ -44,4 +45,3 @@ export const transformToPayload = (state: EditorState) => {
     }
   }
 }
-

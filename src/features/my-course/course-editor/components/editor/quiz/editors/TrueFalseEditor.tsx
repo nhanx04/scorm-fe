@@ -1,4 +1,5 @@
 import React from 'react'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import type { TrueFalseQuestion } from '../../../../types/editor.types'
 
 type Props = {
@@ -8,24 +9,28 @@ type Props = {
 
 const TrueFalseEditor: React.FC<Props> = ({ question, onChange }) => {
   return (
-    <div className='flex gap-3'>
+    <div className='grid gap-3 sm:grid-cols-2'>
       <button
         type='button'
-        className={`flex-1 rounded-xl border px-4 py-3 text-sm font-medium transition hover:border-blue-400 hover:bg-blue-50 ${
-          question.correctAnswer ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'
-        }`}
         onClick={() => onChange({ ...question, correctAnswer: true })}
+        className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-4 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${
+          question.correctAnswer
+            ? 'border-green-400 bg-green-50 text-green-700 shadow-sm'
+            : 'border-gray-200 bg-white/70 text-gray-600 hover:border-green-300'
+        }`}
       >
-        True
+        <CheckCircle2 size={18} /> True
       </button>
       <button
         type='button'
-        className={`flex-1 rounded-xl border px-4 py-3 text-sm font-medium transition hover:border-blue-400 hover:bg-blue-50 ${
-          !question.correctAnswer ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'
-        }`}
         onClick={() => onChange({ ...question, correctAnswer: false })}
+        className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-4 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${
+          !question.correctAnswer
+            ? 'border-green-400 bg-green-50 text-green-700 shadow-sm'
+            : 'border-gray-200 bg-white/70 text-gray-600 hover:border-green-300'
+        }`}
       >
-        False
+        <XCircle size={18} /> False
       </button>
     </div>
   )

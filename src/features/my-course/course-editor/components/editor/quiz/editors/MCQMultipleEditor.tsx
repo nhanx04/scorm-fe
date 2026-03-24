@@ -1,5 +1,7 @@
 import React from 'react'
+import { ListChecks, PlusCircle } from 'lucide-react'
 import type { MCQMultipleQuestion } from '../../../../types/editor.types'
+import OptionItem from '../OptionItem'
 
 type Props = {
   question: MCQMultipleQuestion
@@ -16,40 +18,23 @@ const MCQMultipleEditor: React.FC<Props> = ({ question, onChange }) => {
 
   return (
     <div className='space-y-3'>
+      <div className='mb-1 flex items-center gap-2 text-sm font-semibold text-purple-700'>
+        <ListChecks size={16} />
+        Multiple Choice Options
+      </div>
       {question.options.map((opt) => (
-        <div
+        <OptionItem
           key={opt.id}
-          className={`flex items-center gap-3 rounded-xl border p-3 transition hover:border-blue-300 ${
-            opt.isCorrect ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'
-          }`}
-        >
-          <input
-            type='checkbox'
-            checked={opt.isCorrect}
-            onChange={() => updateOption(opt.id, { isCorrect: !opt.isCorrect })}
-          />
-          <div className='flex-1 space-y-2'>
-            <input
-              value={opt.labelHtml.replace(/<[^>]*>/g, '')}
-              onChange={(e) => updateOption(opt.id, { labelHtml: `<p>${e.target.value}</p>` })}
-              placeholder='Option text...'
-              className='w-full border-b border-gray-300 bg-transparent pb-1 text-sm outline-none focus:border-blue-500'
-            />
-            <input
-              placeholder='Feedback...'
-              value={opt.feedback ?? ''}
-              onChange={(e) => updateOption(opt.id, { feedback: e.target.value })}
-              className='w-full border-b border-gray-300 bg-transparent pb-1 text-xs outline-none focus:border-blue-500'
-            />
-          </div>
-          <button
-            type='button'
-            onClick={() => onChange({ ...question, options: question.options.filter((o) => o.id !== opt.id) })}
-            className='text-xs text-red-500 transition hover:text-red-700'
-          >
-            Remove
-          </button>
-        </div>
+          selected={opt.isCorrect}
+          type='multiple'
+          accentClass='text-purple-600'
+          optionValue={opt.labelHtml.replace(/<[^>]*>/g, '')}
+          feedbackValue={opt.feedback ?? ''}
+          onSelect={() => updateOption(opt.id, { isCorrect: !opt.isCorrect })}
+          onOptionChange={(next) => updateOption(opt.id, { labelHtml: `<p>${next}</p>` })}
+          onFeedbackChange={(next) => updateOption(opt.id, { feedback: next })}
+          onRemove={() => onChange({ ...question, options: question.options.filter((o) => o.id !== opt.id) })}
+        />
       ))}
       <button
         type='button'
@@ -62,9 +47,9 @@ const MCQMultipleEditor: React.FC<Props> = ({ question, onChange }) => {
             ]
           })
         }
-        className='w-full rounded-xl border-2 border-dashed border-gray-300 p-3 text-sm text-gray-500 transition hover:border-blue-400 hover:text-blue-500'
+        className='flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-purple-300 p-3 text-sm font-medium text-purple-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-purple-50'
       >
-        + Add option
+        <PlusCircle size={16} /> Add Option
       </button>
       {question.options.length < 2 && <p className='text-xs text-red-500'>MCQ must have at least 2 options.</p>}
       {!question.options.some((o) => o.isCorrect) && (

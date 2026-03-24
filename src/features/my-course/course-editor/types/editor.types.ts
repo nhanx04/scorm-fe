@@ -26,6 +26,7 @@ export type Course = {
   id: string
   title: string
   description?: string
+  coverImageUrl?: string
   passingScore?: number
   attemptLimit?: number
   durationMin?: number

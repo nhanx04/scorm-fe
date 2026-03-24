@@ -4,6 +4,7 @@ type Payload = {
   editorStateSnapshot?: {
     title?: string
     description?: string
+    coverImageUrl?: string
     passingScore?: number
     attemptLimit?: number
     durationMin?: number
@@ -31,7 +32,6 @@ export const hydrateFromPayload = (payload: Payload): EditorState => {
     sectionOrder.push(section.id)
     sections[section.id] = { id: section.id, title: section.title, description: section.description }
     pageOrder[section.id] = []
-
     ;(section.pages ?? []).forEach((page: any) => {
       pageOrder[section.id].push(page.id)
       const type: Page['type'] = page.pageType === 'QUIZ' ? 'quiz' : 'content'
@@ -46,12 +46,10 @@ export const hydrateFromPayload = (payload: Payload): EditorState => {
 
       blockOrder[page.id] = []
       questionOrder[page.id] = []
-
       ;(page.contentPage?.blocks ?? []).forEach((block: any) => {
         blocks[block.id] = block
         blockOrder[page.id].push(block.id)
       })
-
       ;(page.quizPage?.questions ?? []).forEach((q: any) => {
         questions[q.id] = q
         questionOrder[page.id].push(q.id)
@@ -67,6 +65,7 @@ export const hydrateFromPayload = (payload: Payload): EditorState => {
       id: crypto.randomUUID(),
       title: snapshot?.title ?? 'Untitled Course',
       description: snapshot?.description,
+      coverImageUrl: snapshot?.coverImageUrl,
       passingScore: snapshot?.passingScore,
       attemptLimit: snapshot?.attemptLimit,
       durationMin: snapshot?.durationMin
@@ -82,4 +81,3 @@ export const hydrateFromPayload = (payload: Payload): EditorState => {
     activePageId: firstPage ?? null
   }
 }
-

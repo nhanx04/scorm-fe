@@ -19,7 +19,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-      className='h-full flex flex-col gap-3 p-3'
+      className='h-full flex flex-col gap-3 overflow-y-auto p-3'
       style={{ background: sidebarTheme.background, color: sidebarTheme.color }}
     >
       <div className='flex items-center justify-between'>
@@ -34,7 +34,7 @@ const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      <div className='flex-1 space-y-3 overflow-y-auto pr-1'>
+      <div className='flex-1 space-y-3 pr-1'>
         {sectionOrder.map((sectionId) => {
           const section = sections[sectionId]
           if (!section) return null
