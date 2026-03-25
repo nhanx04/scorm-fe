@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { FiSearch, FiChevronDown, FiFileText, FiLayers } from 'react-icons/fi'
 import { CourseCard } from '@/components'
 import CourseFilter from './components/CourseFilter'
+import CreateCourseWithAIModal from './components/CreateCourseWithAIModal'
 import MainLayout from '@/layouts/main-layout'
 import { courseApi, type CourseResponse } from '@/services/api'
 
@@ -16,6 +17,7 @@ const MyCourseContent: React.FC = () => {
   const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(true)
   const [isCreatingCourse, setIsCreatingCourse] = useState<boolean>(false)
   const [deletingCourseIds, setDeletingCourseIds] = useState<Set<number>>(new Set())
+  const [aiModalOpen, setAiModalOpen] = useState<boolean>(false)
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -168,12 +170,12 @@ const MyCourseContent: React.FC = () => {
                     className='group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800'
                     onClick={() => {
                       setNewCourseOpen(false)
-                      console.log('Create from theme')
+                      setAiModalOpen(true)
                     }}
                     type='button'
                   >
                     <FiLayers className='h-4 w-4' />
-                    Create from theme
+                    Create course with AI
                   </button>
                 </div>
               </div>
@@ -211,6 +213,14 @@ const MyCourseContent: React.FC = () => {
 
         {/* --- Kết thúc nội dung chính --- */}
       </div>
+
+      <CreateCourseWithAIModal
+        open={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        onGenerate={(form) => {
+          console.log('Create course with AI form data (mock):', form)
+        }}
+      />
     </div>
   )
 }
