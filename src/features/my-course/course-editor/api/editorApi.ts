@@ -28,6 +28,33 @@ type EnsureCoursePayload = {
   interfaceSnapshot?: unknown
 }
 
+export const saveCourseOnly = async ({
+  courseId,
+  title,
+  description,
+  coverImageUrl,
+  editorStateSnapshot,
+  interfaceSnapshot
+}: EnsureCoursePayload) => {
+  const payload = {
+    title,
+    description,
+    coverImageUrl,
+    editorState: editorStateSnapshot,
+    themeOverride: interfaceSnapshot,
+    editorVersion: 'editor-state-v2',
+    editorStatus: 'DRAFT'
+  }
+
+  if (/^[0-9]+$/.test(courseId)) {
+    const { data } = await courseApi.updateCourse(Number(courseId), payload)
+    return data.courseId as number
+  }
+
+  const { data } = await courseApi.createCourse(payload)
+  return data.courseId as number
+}
+
 export const exportCourse = async ({
   courseId,
   packageName,

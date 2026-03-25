@@ -87,6 +87,8 @@ export type CreateScormPackageRequest = {
 
 export type CreateCourseRequest = {
   title: string
+  description?: string
+  coverImageUrl?: string
   passingScore?: number
   attemptLimit?: number
   durationMin?: number
@@ -100,6 +102,8 @@ export type CreateCourseRequest = {
   editorVersion?: string
   editorStatus?: string
 }
+
+export type UpdateCourseRequest = Partial<CreateCourseRequest>
 
 export type CourseResponse = {
   courseId: number
@@ -118,6 +122,8 @@ export type CreateCourseScormPackageRequest = {
 
 export const courseApi = {
   createCourse: (payload: CreateCourseRequest) => api.post<CourseResponse>('/courses', payload),
+  updateCourse: (courseId: number | string, payload: UpdateCourseRequest) =>
+    api.patch<CourseResponse>(`/courses/${courseId}`, payload),
   listCourses: () => api.get<CourseResponse[]>('/courses'),
   getCourseById: (courseId: number | string) => api.get<CourseResponse>(`/courses/${courseId}`),
   deleteCourse: (courseId: number | string) => api.delete(`/courses/${courseId}`)
