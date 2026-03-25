@@ -20,9 +20,24 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
   const addQuestion = useCourseEditorStore((s) => s.addQuestion)
   const updateQuestion = useCourseEditorStore((s) => s.updateQuestion)
   const questionOrder = useCourseEditorStore((s) => s.questionOrder[page.id] ?? [])
+  const course = useCourseEditorStore((s) => s.course)
+  const sections = useCourseEditorStore((s) => s.sections)
+  const pageOrder = useCourseEditorStore((s) => s.pageOrder)
+  const pages = useCourseEditorStore((s) => s.pages)
+  const blocks = useCourseEditorStore((s) => s.blocks)
   const [open, setOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('Generate a beginner-level quiz for this page topic')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [generatedQuestions, setGeneratedQuestions] = useState<
+    Array<{
+      type: QuestionType
+      prompt: string
+      options?: string[]
+      correctAnswer?: boolean | string | string[]
+      sentenceHtml?: string
+      pairs?: Array<{ left: string; right: string }>
+    }>
+  >([])
 
   const questionTypeMap = useMemo<Record<string, QuestionType>>(
     () => ({
@@ -36,61 +51,94 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
     []
   )
 
+  const sectionId = Object.keys(pageOrder).find((id) => pageOrder[id]?.includes(page.id))
+  const sectionTitle = sectionId ? (sections[sectionId]?.title ?? '') : ''
+  const pageTitle = pages[page.id]?.title ?? ''
+  const pageContent = (useCourseEditorStore.getState().blockOrder[page.id] ?? [])
+    .map((blockId) => blocks[blockId])
+    .map((block) => {
+      if (!block) return ''
+      if (block.type === 'TEXT') return block.textHtml ?? ''
+      if (block.type === 'IMAGE') return block.imageUrl ? `[Image: ${block.imageUrl}]` : ''
+      if (block.type === 'VIDEO') return block.embedUrl ? `[Video: ${block.embedUrl}]` : ''
+      return ''
+    })
+    .join('\n')
+
+  const addGeneratedQuestionsToCourse = () => {
+    for (const generated of generatedQuestions) {
+      const mappedType = questionTypeMap[generated.type] ?? 'SHORT_ANSWER'
+      const prevLength = (useCourseEditorStore.getState().questionOrder[page.id] ?? []).length
+      addQuestion(page.id, mappedType)
+      const createdId = useCourseEditorStore.getState().questionOrder[page.id]?.[prevLength]
+      if (!createdId) continue
+      if (mappedType === 'MCQ_SINGLE' || mappedType === 'MCQ_MULTIPLE') {
+        const options = (generated.options ?? ['Option 1', 'Option 2']).map((label, index) => ({
+          id: crypto.randomUUID(),
+          labelHtml: `<p>${label}</p>`,
+          isCorrect: Array.isArray(generated.correctAnswer)
+            ? generated.correctAnswer.includes(label)
+            : String(generated.correctAnswer ?? '') === label || index === 0
+        }))
+        updateQuestion(page.id, createdId, { promptHtml: `<p>${generated.prompt}</p>`, options } as never)
+      } else if (mappedType === 'TRUE_FALSE') {
+        updateQuestion(page.id, createdId, {
+          promptHtml: `<p>${generated.prompt}</p>`,
+          correctAnswer: String(generated.correctAnswer).toLowerCase() === 'true'
+        } as never)
+      } else if (mappedType === 'SHORT_ANSWER') {
+        updateQuestion(page.id, createdId, {
+          promptHtml: `<p>${generated.prompt}</p>`,
+          acceptableAnswers: Array.isArray(generated.correctAnswer)
+            ? generated.correctAnswer.map(String)
+            : generated.correctAnswer
+              ? [String(generated.correctAnswer)]
+              : []
+        } as never)
+      } else if (mappedType === 'FILL_IN_THE_BLANK') {
+        updateQuestion(page.id, createdId, {
+          promptHtml: `<p>${generated.prompt}</p>`,
+          sentenceHtml: generated.sentenceHtml ?? `<p>${generated.prompt}</p>`,
+          answers: Array.isArray(generated.correctAnswer)
+            ? generated.correctAnswer.map(String)
+            : generated.correctAnswer
+              ? [String(generated.correctAnswer)]
+              : ['']
+        } as never)
+      } else if (mappedType === 'MATCHING') {
+        updateQuestion(page.id, createdId, {
+          promptHtml: `<p>${generated.prompt}</p>`,
+          pairs: (generated.pairs ?? []).map((pair) => ({
+            id: crypto.randomUUID(),
+            left: pair.left,
+            right: pair.right
+          }))
+        } as never)
+      }
+    }
+    setGeneratedQuestions([])
+  }
+
   const handleGenerateQuiz = async () => {
     if (!aiPrompt.trim()) return
     setIsGenerating(true)
     try {
-      const result = await generateQuiz(aiPrompt)
-      for (const generated of result.questions ?? []) {
-        const mappedType = questionTypeMap[generated.type] ?? 'SHORT_ANSWER'
-        const prevLength = (useCourseEditorStore.getState().questionOrder[page.id] ?? []).length
-        addQuestion(page.id, mappedType)
-        const createdId = useCourseEditorStore.getState().questionOrder[page.id]?.[prevLength]
-        if (!createdId) continue
-        if (mappedType === 'MCQ_SINGLE' || mappedType === 'MCQ_MULTIPLE') {
-          const options = (generated.options ?? ['Option 1', 'Option 2']).map((label, index) => ({
-            id: crypto.randomUUID(),
-            labelHtml: `<p>${label}</p>`,
-            isCorrect: Array.isArray(generated.correctAnswer)
-              ? generated.correctAnswer.includes(label)
-              : String(generated.correctAnswer ?? '') === label || index === 0
-          }))
-          updateQuestion(page.id, createdId, { promptHtml: `<p>${generated.prompt}</p>`, options } as never)
-        } else if (mappedType === 'TRUE_FALSE') {
-          updateQuestion(page.id, createdId, {
-            promptHtml: `<p>${generated.prompt}</p>`,
-            correctAnswer: String(generated.correctAnswer).toLowerCase() === 'true'
-          } as never)
-        } else if (mappedType === 'SHORT_ANSWER') {
-          updateQuestion(page.id, createdId, {
-            promptHtml: `<p>${generated.prompt}</p>`,
-            acceptableAnswers: Array.isArray(generated.correctAnswer)
-              ? generated.correctAnswer.map(String)
-              : generated.correctAnswer
-                ? [String(generated.correctAnswer)]
-                : []
-          } as never)
-        } else if (mappedType === 'FILL_IN_THE_BLANK') {
-          updateQuestion(page.id, createdId, {
-            promptHtml: `<p>${generated.prompt}</p>`,
-            sentenceHtml: generated.sentenceHtml ?? `<p>${generated.prompt}</p>`,
-            answers: Array.isArray(generated.correctAnswer)
-              ? generated.correctAnswer.map(String)
-              : generated.correctAnswer
-                ? [String(generated.correctAnswer)]
-                : ['']
-          } as never)
-        } else if (mappedType === 'MATCHING') {
-          updateQuestion(page.id, createdId, {
-            promptHtml: `<p>${generated.prompt}</p>`,
-            pairs: (generated.pairs ?? []).map((pair) => ({
-              id: crypto.randomUUID(),
-              left: pair.left,
-              right: pair.right
-            }))
-          } as never)
-        }
-      }
+      const result = await generateQuiz({
+        courseTitle: course.title,
+        courseDescription: course.description ?? '',
+        sectionTitle,
+        pageTitle,
+        sourceText: `${pageTitle}\n${pageContent}\n${aiPrompt}`,
+        numberOfQuestions: 6,
+        language: 'Vietnamese',
+        difficulty: 'Trung bình'
+      })
+      setGeneratedQuestions(
+        (result.questions ?? []).map((generated) => ({
+          ...generated,
+          type: questionTypeMap[generated.type] ?? 'SHORT_ANSWER'
+        }))
+      )
     } finally {
       setIsGenerating(false)
     }
@@ -121,14 +169,24 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
           className='w-full resize-none bg-transparent text-sm text-gray-700 outline-none'
           placeholder='Describe what quiz to generate...'
         />
-        <button
-          type='button'
-          onClick={handleGenerateQuiz}
-          disabled={isGenerating}
-          className='mt-3 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-sm text-white transition hover:scale-[1.02] disabled:opacity-60'
-        >
-          {isGenerating ? 'Generating...' : 'Generate questions'}
-        </button>
+        <div className='mt-3 flex flex-wrap items-center gap-2'>
+          <button
+            type='button'
+            onClick={handleGenerateQuiz}
+            disabled={isGenerating}
+            className='rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-sm text-white transition hover:scale-[1.02] disabled:opacity-60'
+          >
+            {isGenerating ? 'Generating...' : 'Generate questions'}
+          </button>
+          <button
+            type='button'
+            onClick={addGeneratedQuestionsToCourse}
+            disabled={generatedQuestions.length === 0}
+            className='rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-blue-700 disabled:opacity-50'
+          >
+            Add to course ({generatedQuestions.length})
+          </button>
+        </div>
       </div>
 
       {open && (

@@ -16,12 +16,77 @@ export type AIQuizResult = {
   }>
 }
 
-export const generateContent = async (prompt: string): Promise<AIBlockResult> => {
-  const { data } = await api.post('/editor/ai/content', { prompt })
+export type AICourseOutlineRequest = {
+  topic: string
+  targetAudience: string
+  language: string
+  numberOfSections: number
+  additionalInstructions?: string
+}
+
+export type AICourseOutlineResponse = {
+  title: string
+  description: string
+  sections: Array<{
+    title: string
+    topics: string[]
+  }>
+}
+
+export type AIGeneratePageContentRequest = {
+  courseTopic: string
+  sectionTitle: string
+  pageTopic: string
+  language: string
+  additionalInstructions?: string
+}
+
+export type AIAskKnowledgeRequest = {
+  courseTitle: string
+  courseDescription?: string
+  sectionTitle: string
+  pageTitle: string
+  pageContent: string
+  question: string
+  language: string
+}
+
+export type AIKnowledgeAnswerResponse = {
+  answer: string
+  groundedInCourse: boolean
+  sourceScope: string
+}
+
+export type AIGenerateCourseQuizRequest = {
+  courseTitle: string
+  courseDescription?: string
+  sectionTitle: string
+  pageTitle: string
+  sourceText: string
+  numberOfQuestions: number
+  language: string
+  difficulty?: string
+}
+
+export const generatePageContent = async (payload: AIGeneratePageContentRequest): Promise<AIBlockResult> => {
+  const { data } = await api.post('/ai/generate-page-content', payload)
+  return {
+    type: 'TEXT',
+    content: data?.htmlContent ?? ''
+  }
+}
+
+export const askKnowledge = async (payload: AIAskKnowledgeRequest): Promise<AIKnowledgeAnswerResponse> => {
+  const { data } = await api.post('/ai/ask-knowledge', payload)
   return data
 }
 
-export const generateQuiz = async (prompt: string): Promise<AIQuizResult> => {
-  const { data } = await api.post('/editor/ai/quiz', { prompt })
+export const generateQuiz = async (payload: AIGenerateCourseQuizRequest): Promise<AIQuizResult> => {
+  const { data } = await api.post('/ai/generate-course-quiz', payload)
+  return data
+}
+
+export const generateCourseOutline = async (payload: AICourseOutlineRequest): Promise<AICourseOutlineResponse> => {
+  const { data } = await api.post('/ai/generate-outline', payload)
   return data
 }

@@ -7,6 +7,7 @@ import MainEditor from './components/editor/MainEditor'
 import { useCourseEditorStore } from './store/use-course-editor-store'
 import { loadDraft, saveDraft } from './api/editorApi'
 import { hydrateFromPayload } from './utils/hydrateFromPayload'
+import AIAssistantPanel from './components/editor/AIAssistantPanel'
 
 export const EditorPage: React.FC = () => {
   const navigate = useNavigate()
@@ -15,7 +16,8 @@ export const EditorPage: React.FC = () => {
   const hydratingRef = useRef(true)
 
   const hasToken =
-    typeof window !== 'undefined' && !!(localStorage.getItem('accessToken') || localStorage.getItem('token'))
+    typeof window !== 'undefined' &&
+    !!(localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('auth_token'))
 
   useEffect(() => {
     if (!hasToken) {
@@ -65,6 +67,7 @@ export const EditorPage: React.FC = () => {
   return (
     <MainLayout>
       <EditorLayout sidebar={<Sidebar />} main={<MainEditor />} />
+      <AIAssistantPanel />
     </MainLayout>
   )
 }

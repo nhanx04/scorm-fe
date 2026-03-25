@@ -28,6 +28,7 @@ type EditorActions = {
   addSection: () => void
   updateSection: (sectionId: string, data: Partial<Section>) => void
   reorderSections: (activeId: string, overId: string) => void
+  removeSection: (sectionId: string) => void
   addPage: (sectionId: string, type?: Page['type']) => void
   updatePage: (pageId: string, data: Partial<Page>) => void
   setActivePage: (pageId: string | null) => void
@@ -172,6 +173,51 @@ export const useCourseEditorStore = create<EditorStore>()(
         const newIndex = s.sectionOrder.indexOf(overId)
         if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return
         s.sectionOrder = moveInArray(s.sectionOrder, oldIndex, newIndex)
+      }),
+    removeSection: (sectionId) =>
+      set((s) => {
+        if (!s.sections[sectionId]) return
+
+        const pageIds = s.pageOrder[sectionId] ?? []
+        pageIds.forEach((pageId) => {
+          const blockIds = s.blockOrder[pageId] ?? []
+          const questionIds = s.questionOrder[pageId] ?? []
+
+          blockIds.forEach((blockId) => {
+            delete s.blocks[blockId]
+          })
+          questionIds.forEach((questionId) => {
+            delete s.questions[questionId]
+          })
+
+          delete s.blockOrder[pageId]
+          delete s.questionOrder[pageId]
+          delete s.pages[pageId]
+        })
+
+        delete s.pageOrder[sectionId]
+        delete s.sections[sectionId]
+        s.sectionOrder = s.sectionOrder.filter((id) => id !== sectionId)
+
+        if (s.sectionOrder.length === 0) {
+          const newSectionId = createId()
+          const newPageId = createId()
+          s.sectionOrder = [newSectionId]
+          s.sections[newSectionId] = { id: newSectionId, title: 'Section 1', description: 'Introduction section' }
+          s.pageOrder[newSectionId] = [newPageId]
+          s.pages[newPageId] = { id: newPageId, title: 'Page 1', type: 'content', layoutType: 'SINGLE_COLUMN' }
+          s.blockOrder[newPageId] = []
+          s.questionOrder[newPageId] = []
+          s.activePageId = newPageId
+          return
+        }
+
+        const stillValidActivePage = s.activePageId && s.pages[s.activePageId]
+        if (!stillValidActivePage) {
+          const firstSectionId = s.sectionOrder[0]
+          const firstPageId = (firstSectionId && s.pageOrder[firstSectionId]?.[0]) || null
+          s.activePageId = firstPageId
+        }
       }),
     addPage: (sectionId, type = 'content') =>
       set((s) => {
