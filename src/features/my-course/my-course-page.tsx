@@ -2,14 +2,20 @@ import React, { useEffect, useRef, useState } from 'react'
 import { FiSearch, FiChevronDown, FiFileText, FiLayers } from 'react-icons/fi'
 import { CourseCard } from '@/components'
 import CourseFilter from './components/CourseFilter'
-import { coursesMock } from './mock/courses.mock'
 import MainLayout from '@/layouts/main-layout'
+import { courseApi, type CourseResponse } from '@/services/api'
 
 import { useNavigate } from 'react-router'
+
+const DEFAULT_COURSE_IMAGE = 'https://via.placeholder.com/640x360?text=Course'
 
 const MyCourseContent: React.FC = () => {
   const navigate = useNavigate()
   const [newCourseOpen, setNewCourseOpen] = useState<boolean>(false)
+  const [courses, setCourses] = useState<CourseResponse[]>([])
+  const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(true)
+  const [isCreatingCourse, setIsCreatingCourse] = useState<boolean>(false)
+  const [deletingCourseIds, setDeletingCourseIds] = useState<Set<number>>(new Set())
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -41,6 +47,76 @@ const MyCourseContent: React.FC = () => {
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [newCourseOpen])
+
+  const fetchCourses = async (mountedRef?: { current: boolean }) => {
+    try {
+      setIsLoadingCourses(true)
+      const response = await courseApi.listCourses()
+      if (mountedRef && !mountedRef.current) return
+      setCourses(response.data ?? [])
+    } catch (error) {
+      console.error('Failed to fetch courses', error)
+    } finally {
+      if (!mountedRef || mountedRef.current) setIsLoadingCourses(false)
+    }
+  }
+
+  useEffect(() => {
+    const mountedRef = { current: true }
+
+    void fetchCourses(mountedRef)
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  const handleCreateFromScratch = async () => {
+    if (isCreatingCourse) return
+
+    try {
+      setIsCreatingCourse(true)
+      setNewCourseOpen(false)
+      const response = await courseApi.createCourse({
+        title: 'Untitled Course'
+      })
+      const courseId = response.data?.courseId
+      if (!courseId) return
+      navigate(`/my-course/editor/${courseId}`)
+    } catch (error) {
+      console.error('Failed to create course', error)
+    } finally {
+      setIsCreatingCourse(false)
+    }
+  }
+
+  const handleOpenCourse = (courseId: number) => {
+    navigate(`/my-course/editor/${courseId}`)
+  }
+
+  const handleDeleteCourse = async (courseId: number) => {
+    const confirmed = window.confirm('Bạn có chắc muốn xóa khóa học này?')
+    if (!confirmed) return
+
+    try {
+      setDeletingCourseIds((prev) => {
+        const next = new Set(prev)
+        next.add(courseId)
+        return next
+      })
+
+      await courseApi.deleteCourse(courseId)
+      setCourses((prev) => prev.filter((course) => course.courseId !== courseId))
+    } catch (error) {
+      console.error('Failed to delete course', error)
+    } finally {
+      setDeletingCourseIds((prev) => {
+        const next = new Set(prev)
+        next.delete(courseId)
+        return next
+      })
+    }
+  }
 
   return (
     <div className='px-20 bg-gray-100 min-h-screen'>
@@ -77,12 +153,12 @@ const MyCourseContent: React.FC = () => {
               >
                 <div className='p-1'>
                   <button
-                    className='group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800'
+                    className='group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-60'
                     onClick={() => {
-                      setNewCourseOpen(false)
-                      navigate('/my-course/editor')
+                      void handleCreateFromScratch()
                     }}
                     type='button'
+                    disabled={isCreatingCourse}
                   >
                     <FiFileText className='h-4 w-4' />
                     Create from scratch
@@ -113,11 +189,25 @@ const MyCourseContent: React.FC = () => {
         </div>
 
         {/* Course grid */}
-        <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5'>
-          {coursesMock.map((c) => (
-            <CourseCard key={c.title} {...c} />
-          ))}
-        </div>
+        {isLoadingCourses ? (
+          <div className='text-gray-500'>Loading courses...</div>
+        ) : (
+          <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5'>
+            {courses.map((course) => (
+              <CourseCard
+                key={course.courseId}
+                title={course.title}
+                description={course.description ?? ''}
+                image={course.coverImageUrl || DEFAULT_COURSE_IMAGE}
+                onClick={() => handleOpenCourse(course.courseId)}
+                onDelete={() => {
+                  void handleDeleteCourse(course.courseId)
+                }}
+                isDeleting={deletingCourseIds.has(course.courseId)}
+              />
+            ))}
+          </div>
+        )}
 
         {/* --- Kết thúc nội dung chính --- */}
       </div>

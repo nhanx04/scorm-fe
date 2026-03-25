@@ -101,6 +101,14 @@ export type CreateCourseRequest = {
   editorStatus?: string
 }
 
+export type CourseResponse = {
+  courseId: number
+  title: string
+  description?: string | null
+  coverImageUrl?: string | null
+  status?: string | null
+}
+
 export type CreateCourseScormPackageRequest = {
   packageName: string
   packageType: string
@@ -109,7 +117,10 @@ export type CreateCourseScormPackageRequest = {
 }
 
 export const courseApi = {
-  createCourse: (payload: CreateCourseRequest) => api.post('/courses', payload)
+  createCourse: (payload: CreateCourseRequest) => api.post<CourseResponse>('/courses', payload),
+  listCourses: () => api.get<CourseResponse[]>('/courses'),
+  getCourseById: (courseId: number | string) => api.get<CourseResponse>(`/courses/${courseId}`),
+  deleteCourse: (courseId: number | string) => api.delete(`/courses/${courseId}`)
 }
 
 export const scormApi = {
