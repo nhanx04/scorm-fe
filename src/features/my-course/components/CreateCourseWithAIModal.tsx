@@ -157,6 +157,10 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
     try {
       await onGenerate?.(form, referenceFile)
       onClose()
+    } catch (error) {
+      console.error('Lỗi khi gọi onGenerate trong Modal:', error)
+      // Khi có lỗi ném ra từ onGenerate, nó sẽ nhảy thẳng vào đây và không gọi onClose(), 
+      // cho phép modal vẫn mở và người dùng có thể thử lại.
     } finally {
       setIsGenerating(false)
     }
