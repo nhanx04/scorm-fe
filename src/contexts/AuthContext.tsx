@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { authApi } from '@/services/api'
 
 type User = {
@@ -35,7 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
-  const location = useLocation()
 
   useEffect(() => {
     try {
@@ -77,9 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem(STORAGE_USER_KEY)
     setUser(null)
 
-    const from = location.pathname
-    navigate(`/login?from=${encodeURIComponent(from)}`)
-  }, [location.pathname, navigate])
+    navigate('/')
+  }, [navigate])
 
   const value = useMemo(
     () => ({

@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { useCourseEditorStore } from '../../store/use-course-editor-store'
 import SectionItem from './SectionItem'
 import { resolveTheme } from '../../utils/resolveTheme'
-import { FiTrash2 } from 'react-icons/fi'
+import { FiArrowLeft, FiTrash2 } from 'react-icons/fi'
 
 const Sidebar: React.FC = () => {
+  const navigate = useNavigate()
   const sectionOrder = useCourseEditorStore((state) => state.sectionOrder)
   const sections = useCourseEditorStore((state) => state.sections)
   const pages = useCourseEditorStore((state) => state.pages)
@@ -36,7 +38,17 @@ const Sidebar: React.FC = () => {
       style={{ background: sidebarTheme.background, color: sidebarTheme.color }}
     >
       <div className='flex items-center justify-between gap-2'>
-        <h2 className='text-sm font-semibold'>Course Outline</h2>
+        <div>
+          <h2 className='text-sm font-semibold'>Course Outline</h2>
+          <button
+            type='button'
+            onClick={() => navigate('/my-course')}
+            className='mt-1 inline-flex items-center cursor-pointer gap-1 text-xs font-medium text-blue-700 hover:text-blue-900'
+          >
+            <FiArrowLeft className='h-3.5 w-3.5' />
+            Back to course
+          </button>
+        </div>
         <div className='flex items-center gap-2'>
           <button
             type='button'

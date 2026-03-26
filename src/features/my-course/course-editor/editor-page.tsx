@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
 import EditorLayout from './components/editor/EditorLayout'
 import Sidebar from './components/editor/Sidebar'
@@ -11,6 +11,7 @@ import AIAssistantPanel from './components/editor/AIAssistantPanel'
 
 export const EditorPage: React.FC = () => {
   const navigate = useNavigate()
+  const { courseId } = useParams<{ courseId: string }>()
   const hydrateStore = useCourseEditorStore((state) => state.hydrateStore)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hydratingRef = useRef(true)
@@ -26,11 +27,17 @@ export const EditorPage: React.FC = () => {
       return
     }
 
+    if (!courseId) {
+      hydratingRef.current = false
+      navigate('/my-course')
+      return
+    }
+
     let mounted = true
 
     ;(async () => {
       try {
-        const draft = await loadDraft('current')
+        const draft = await loadDraft(courseId)
         if (!mounted || !draft) return
         const hydrated = hydrateFromPayload(draft)
         hydrateStore(hydrated)
@@ -44,7 +51,7 @@ export const EditorPage: React.FC = () => {
     return () => {
       mounted = false
     }
-  }, [hasToken, hydrateStore, navigate])
+  }, [courseId, hasToken, hydrateStore, navigate])
 
   useEffect(() => {
     if (!hasToken) return

@@ -103,7 +103,7 @@ const ExportActions: React.FC<Props> = ({ courseId }) => {
       <button
         type='button'
         onClick={() => setMode(mode === 'preview' ? 'edit' : 'preview')}
-        className='rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100'
+        className='rounded-lg cursor-pointer border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100'
       >
         {mode === 'preview' ? 'Exit Preview' : 'Preview'}
       </button>
@@ -111,14 +111,14 @@ const ExportActions: React.FC<Props> = ({ courseId }) => {
         type='button'
         onClick={handleSave}
         disabled={saving}
-        className='rounded-lg border border-blue-600 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60'
+        className='rounded-lg cursor-pointer border border-blue-600 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60'
       >
         {saving ? 'Saving...' : 'Save'}
       </button>
       <select
         value={packageType}
         onChange={(e) => setPackageType(e.target.value as 'SCORM_2004' | 'SCORM_12')}
-        className='rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700'
+        className='rounded-lg border cursor-pointer border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700'
       >
         <option value='SCORM_2004'>SCORM 2004</option>
         <option value='SCORM_12'>SCORM 1.2</option>
@@ -127,7 +127,7 @@ const ExportActions: React.FC<Props> = ({ courseId }) => {
         type='button'
         onClick={handleExport}
         disabled={exporting}
-        className='rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60'
+        className='rounded-lg cursor-pointer bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60'
       >
         {exporting ? 'Exporting...' : 'Export'}
       </button>

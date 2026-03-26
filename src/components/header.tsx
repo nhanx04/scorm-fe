@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router'
-import { FiBell, FiChevronDown } from 'react-icons/fi'
+import { FiBell, FiChevronDown, FiLogOut, FiUser } from 'react-icons/fi'
 import { useAuth } from '@/contexts/AuthContext'
 
 const Header: React.FC = () => {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   const fullName = user ? [user.fname, user.minit, user.lname].filter(Boolean).join(' ') : ''
   const initials = user ? [user.fname?.[0], user.lname?.[0]].filter(Boolean).join('').toUpperCase() : ''
@@ -19,6 +21,18 @@ const Header: React.FC = () => {
   ]
 
   const isActive = (path: string) => pathname === path
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!menuRef.current) return
+      if (!menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
 
   return (
     // 1. Giữ nguyên h-12 hoặc tăng lên h-14/h-16 nếu muốn thoáng hơn
@@ -38,7 +52,7 @@ const Header: React.FC = () => {
               key={item.id}
               onClick={() => navigate(item.path)}
               // 3. Quan trọng: h-full (cao hết cỡ), flex items-center (căn giữa chữ), relative
-              className={`relative h-full flex items-center px-1 font-medium transition-colors 
+              className={`relative h-full cursor-pointer flex items-center px-1 font-medium transition-colors 
                 ${isActive(item.path) ? 'text-blue-900' : 'text-gray-500 hover:text-blue-700'}`}
             >
               {item.label}
@@ -61,12 +75,12 @@ const Header: React.FC = () => {
         </div>
 
         {/* User info */}
-        <div className='flex items-center space-x-3'>
+        <div ref={menuRef} className='relative flex items-center space-x-3'>
           <button
             type='button'
             className='flex items-center space-x-3 cursor-pointer'
-            onClick={() => logout()}
-            title='Logout'
+            onClick={() => setMenuOpen((prev) => !prev)}
+            title='Account menu'
           >
             <div className='text-right leading-none'>
               <p className='text-sm font-semibold text-blue-900'>{fullName}</p>
@@ -77,6 +91,33 @@ const Header: React.FC = () => {
             </div>
             <FiChevronDown className='text-gray-500' />
           </button>
+
+          {menuOpen && (
+            <div className='absolute right-0 top-12 z-50 w-44 rounded-lg border border-gray-200 bg-white p-1 shadow-lg'>
+              <button
+                type='button'
+                onClick={() => {
+                  setMenuOpen(false)
+                  navigate('/profile')
+                }}
+                className='flex w-full items-center cursor-pointer gap-2 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100'
+              >
+                <FiUser className='h-4 w-4' />
+                Profile
+              </button>
+              <button
+                type='button'
+                onClick={() => {
+                  setMenuOpen(false)
+                  logout()
+                }}
+                className='flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50'
+              >
+                <FiLogOut className='h-4 w-4' />
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -111,6 +111,9 @@ export type CourseResponse = {
   description?: string | null
   coverImageUrl?: string | null
   status?: string | null
+  editorState?: unknown
+  editorStateSnapshot?: unknown
+  themeOverride?: unknown
 }
 
 export type CreateCourseScormPackageRequest = {

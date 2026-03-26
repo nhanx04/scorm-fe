@@ -7,8 +7,11 @@ export const saveDraft = async (editorState: EditorState) => {
 }
 
 export const loadDraft = async (courseId: string) => {
-  const { data } = await api.get(`/editor/draft/${courseId}`)
-  return data
+  const { data } = await courseApi.getCourseById(courseId)
+  return {
+    editorStateSnapshot: data.editorState ?? data.editorStateSnapshot,
+    interfaceSnapshot: data.themeOverride
+  }
 }
 
 type ExportCoursePayload = {

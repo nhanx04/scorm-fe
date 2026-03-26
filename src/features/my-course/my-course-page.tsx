@@ -3,6 +3,7 @@ import { FiSearch, FiChevronDown, FiFileText, FiLayers } from 'react-icons/fi'
 import { CourseCard } from '@/components'
 import CourseFilter from './components/CourseFilter'
 import CreateCourseWithAIModal from './components/CreateCourseWithAIModal'
+import DeleteCourseConfirmDialog from './components/DeleteCourseConfirmDialog'
 import MainLayout from '@/layouts/main-layout'
 import { courseApi, type CourseResponse } from '@/services/api'
 import { generateCourseOutline, generateCourseOutlineFromFile } from './course-editor/api/aiApi'
@@ -20,6 +21,7 @@ const MyCourseContent: React.FC = () => {
   const [deletingCourseIds, setDeletingCourseIds] = useState<Set<number>>(new Set())
   const [aiModalOpen, setAiModalOpen] = useState<boolean>(false)
   const [aiActionMessage, setAiActionMessage] = useState<string | null>(null)
+  const [coursePendingDelete, setCoursePendingDelete] = useState<CourseResponse | null>(null)
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -99,9 +101,6 @@ const MyCourseContent: React.FC = () => {
   }
 
   const handleDeleteCourse = async (courseId: number) => {
-    const confirmed = window.confirm('Bạn có chắc muốn xóa khóa học này?')
-    if (!confirmed) return
-
     try {
       setDeletingCourseIds((prev) => {
         const next = new Set(prev)
@@ -111,6 +110,7 @@ const MyCourseContent: React.FC = () => {
 
       await courseApi.deleteCourse(courseId)
       setCourses((prev) => prev.filter((course) => course.courseId !== courseId))
+      setCoursePendingDelete(null)
     } catch (error) {
       console.error('Failed to delete course', error)
     } finally {
@@ -142,7 +142,7 @@ const MyCourseContent: React.FC = () => {
           </div>
           <div className='relative'>
             <button
-              className='flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors'
+              className='flex items-center cursor-pointer gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors'
               onClick={() => setNewCourseOpen((v: boolean) => !v)}
               ref={newCourseBtnRef}
               type='button'
@@ -157,7 +157,7 @@ const MyCourseContent: React.FC = () => {
               >
                 <div className='p-1'>
                   <button
-                    className='group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-60'
+                    className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-60'
                     onClick={() => {
                       void handleCreateFromScratch()
                     }}
@@ -169,7 +169,7 @@ const MyCourseContent: React.FC = () => {
                   </button>
 
                   <button
-                    className='group flex w-full items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800'
+                    className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800'
                     onClick={() => {
                       setNewCourseOpen(false)
                       setAiModalOpen(true)
@@ -205,7 +205,7 @@ const MyCourseContent: React.FC = () => {
                 image={course.coverImageUrl || DEFAULT_COURSE_IMAGE}
                 onClick={() => handleOpenCourse(course.courseId)}
                 onDelete={() => {
-                  void handleDeleteCourse(course.courseId)
+                  setCoursePendingDelete(course)
                 }}
                 isDeleting={deletingCourseIds.has(course.courseId)}
               />
@@ -263,6 +263,17 @@ const MyCourseContent: React.FC = () => {
           } else {
             setAiActionMessage('Đã tạo outline AI nhưng chưa mở được editor.')
           }
+        }}
+      />
+
+      <DeleteCourseConfirmDialog
+        open={!!coursePendingDelete}
+        courseTitle={coursePendingDelete?.title}
+        isDeleting={coursePendingDelete ? deletingCourseIds.has(coursePendingDelete.courseId) : false}
+        onClose={() => setCoursePendingDelete(null)}
+        onConfirm={() => {
+          if (!coursePendingDelete) return
+          void handleDeleteCourse(coursePendingDelete.courseId)
         }}
       />
     </div>
