@@ -28,12 +28,14 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
   const [open, setOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('Generate a beginner-level quiz for this page topic')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [generateError, setGenerateError] = useState<string | null>(null)
   const [generatedQuestions, setGeneratedQuestions] = useState<
     Array<{
       type: QuestionType
       prompt: string
       options?: string[]
       correctAnswer?: boolean | string | string[]
+      explanation?: string
       sentenceHtml?: string
       pairs?: Array<{ left: string; right: string }>
     }>
@@ -80,11 +82,16 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
             ? generated.correctAnswer.includes(label)
             : String(generated.correctAnswer ?? '') === label || index === 0
         }))
-        updateQuestion(page.id, createdId, { promptHtml: `<p>${generated.prompt}</p>`, options } as never)
+        updateQuestion(page.id, createdId, {
+          promptHtml: `<p>${generated.prompt}</p>`,
+          options,
+          explanationHtml: generated.explanation ? `<p>${generated.explanation}</p>` : undefined
+        } as never)
       } else if (mappedType === 'TRUE_FALSE') {
         updateQuestion(page.id, createdId, {
           promptHtml: `<p>${generated.prompt}</p>`,
-          correctAnswer: String(generated.correctAnswer).toLowerCase() === 'true'
+          correctAnswer: String(generated.correctAnswer).toLowerCase() === 'true',
+          explanationHtml: generated.explanation ? `<p>${generated.explanation}</p>` : undefined
         } as never)
       } else if (mappedType === 'SHORT_ANSWER') {
         updateQuestion(page.id, createdId, {
@@ -93,7 +100,8 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
             ? generated.correctAnswer.map(String)
             : generated.correctAnswer
               ? [String(generated.correctAnswer)]
-              : []
+              : [],
+          explanationHtml: generated.explanation ? `<p>${generated.explanation}</p>` : undefined
         } as never)
       } else if (mappedType === 'FILL_IN_THE_BLANK') {
         updateQuestion(page.id, createdId, {
@@ -103,7 +111,8 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
             ? generated.correctAnswer.map(String)
             : generated.correctAnswer
               ? [String(generated.correctAnswer)]
-              : ['']
+              : [''],
+          explanationHtml: generated.explanation ? `<p>${generated.explanation}</p>` : undefined
         } as never)
       } else if (mappedType === 'MATCHING') {
         updateQuestion(page.id, createdId, {
@@ -112,7 +121,8 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
             id: crypto.randomUUID(),
             left: pair.left,
             right: pair.right
-          }))
+          })),
+          explanationHtml: generated.explanation ? `<p>${generated.explanation}</p>` : undefined
         } as never)
       }
     }
@@ -121,6 +131,7 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
 
   const handleGenerateQuiz = async () => {
     if (!aiPrompt.trim()) return
+    setGenerateError(null)
     setIsGenerating(true)
     try {
       const result = await generateQuiz({
@@ -139,6 +150,8 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
           type: questionTypeMap[generated.type] ?? 'SHORT_ANSWER'
         }))
       )
+    } catch {
+      setGenerateError('AI chưa thể tạo câu hỏi lúc này. Vui lòng thử lại.')
     } finally {
       setIsGenerating(false)
     }
@@ -187,6 +200,26 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
             Add to course ({generatedQuestions.length})
           </button>
         </div>
+
+        {generateError ? <p className='mt-2 text-xs text-red-600'>{generateError}</p> : null}
+
+        {isGenerating ? (
+          <div className='mt-3 space-y-2'>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className='h-12 animate-pulse rounded-lg bg-white/70' />
+            ))}
+          </div>
+        ) : generatedQuestions.length > 0 ? (
+          <div className='mt-3 space-y-2'>
+            {generatedQuestions.map((q, index) => (
+              <div key={`${q.type}-${index}`} className='rounded-lg border border-blue-100 bg-white p-3'>
+                <p className='text-xs font-semibold text-blue-700'>{q.type}</p>
+                <p className='text-sm text-gray-800'>{q.prompt}</p>
+                {q.explanation ? <p className='mt-1 text-xs text-gray-500'>Giải thích: {q.explanation}</p> : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {open && (

@@ -5,6 +5,7 @@ import CourseFilter from './components/CourseFilter'
 import CreateCourseWithAIModal from './components/CreateCourseWithAIModal'
 import MainLayout from '@/layouts/main-layout'
 import { courseApi, type CourseResponse } from '@/services/api'
+import { generateCourseOutline, generateCourseOutlineFromFile } from './course-editor/api/aiApi'
 
 import { useNavigate } from 'react-router'
 
@@ -18,6 +19,7 @@ const MyCourseContent: React.FC = () => {
   const [isCreatingCourse, setIsCreatingCourse] = useState<boolean>(false)
   const [deletingCourseIds, setDeletingCourseIds] = useState<Set<number>>(new Set())
   const [aiModalOpen, setAiModalOpen] = useState<boolean>(false)
+  const [aiActionMessage, setAiActionMessage] = useState<string | null>(null)
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -214,11 +216,53 @@ const MyCourseContent: React.FC = () => {
         {/* --- Kết thúc nội dung chính --- */}
       </div>
 
+      {aiActionMessage ? (
+        <div className='fixed bottom-5 right-5 z-[120] rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow'>
+          <div className='flex items-center gap-3'>
+            <span>{aiActionMessage}</span>
+            <button
+              type='button'
+              onClick={() => setAiActionMessage(null)}
+              className='text-xs font-medium text-emerald-800 hover:text-emerald-950'
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <CreateCourseWithAIModal
         open={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
-        onGenerate={(form) => {
-          console.log('Create course with AI form data (mock):', form)
+        onGenerate={async (form, referenceFile) => {
+          const payload = {
+            courseTitle: form.courseTitle.trim(),
+            courseDescription: form.courseDescription.trim(),
+            targetAudience: form.targetAudience.trim() || 'General learners',
+            audienceProficiencyLevel: form.proficiencyLevel || 'Beginner',
+            duration: form.duration.trim() || '2 hours',
+            language: form.language.trim() || 'Vietnamese',
+            learningOutcomes: form.learningGoal.trim(),
+            prerequisites: form.requiredKnowledge.trim() || 'Không yêu cầu',
+            additionalInstructions: form.additionalInstructions.trim() || undefined
+          }
+
+          const outline = referenceFile
+            ? await generateCourseOutlineFromFile(referenceFile, payload)
+            : await generateCourseOutline(payload)
+
+          const created = await courseApi.createCourse({
+            title: outline.title || payload.courseTitle,
+            description: outline.description || payload.courseDescription
+          })
+
+          const courseId = created.data?.courseId
+          if (courseId) {
+            setAiActionMessage('Đã tạo course từ AI thành công. Đang chuyển tới editor...')
+            navigate(`/my-course/editor/${courseId}`)
+          } else {
+            setAiActionMessage('Đã tạo outline AI nhưng chưa mở được editor.')
+          }
         }}
       />
     </div>

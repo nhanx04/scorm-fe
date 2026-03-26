@@ -11,16 +11,21 @@ export type AIQuizResult = {
     prompt: string
     options?: string[]
     correctAnswer?: boolean | string | string[]
+    explanation?: string
     sentenceHtml?: string
     pairs?: Array<{ left: string; right: string }>
   }>
 }
 
 export type AICourseOutlineRequest = {
-  topic: string
+  courseTitle: string
+  courseDescription: string
   targetAudience: string
+  audienceProficiencyLevel: string
+  duration: string
   language: string
-  numberOfSections: number
+  learningOutcomes: string
+  prerequisites: string
   additionalInstructions?: string
 }
 
@@ -88,5 +93,19 @@ export const generateQuiz = async (payload: AIGenerateCourseQuizRequest): Promis
 
 export const generateCourseOutline = async (payload: AICourseOutlineRequest): Promise<AICourseOutlineResponse> => {
   const { data } = await api.post('/ai/generate-outline', payload)
+  return data
+}
+
+export const generateCourseOutlineFromFile = async (
+  file: File,
+  payload?: Partial<AICourseOutlineRequest>
+): Promise<AICourseOutlineResponse> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  if (payload) {
+    formData.append('request', JSON.stringify(payload))
+  }
+
+  const { data } = await api.post('/ai/generate-outline-from-file', formData)
   return data
 }

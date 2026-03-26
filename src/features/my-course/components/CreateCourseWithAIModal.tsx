@@ -11,12 +11,14 @@ type FormState = {
   learningGoal: string
   requiredKnowledge: string
   courseTitle: string
+  language: string
+  additionalInstructions: string
 }
 
 type CreateCourseWithAIModalProps = {
   open: boolean
   onClose: () => void
-  onGenerate?: (form: FormState) => void
+  onGenerate?: (form: FormState, referenceFile?: File | null) => Promise<void> | void
 }
 
 const MAX_DESC = 600
@@ -109,11 +111,14 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
     duration: '',
     learningGoal: '',
     requiredKnowledge: '',
-    courseTitle: ''
+    courseTitle: '',
+    language: 'Vietnamese',
+    additionalInstructions: ''
   })
   const [dragActive, setDragActive] = useState(false)
   const [referenceFile, setReferenceFile] = useState<File | null>(null)
   const [isSuggesting, setIsSuggesting] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -146,11 +151,15 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
     setReferenceFile(file)
   }
 
-  const handleGenerate = () => {
-    if (!canGenerate) return
-    onGenerate?.(form)
-    console.log('Mock generate course with AI', { form, referenceFile })
-    onClose()
+  const handleGenerate = async () => {
+    if (!canGenerate || isGenerating) return
+    setIsGenerating(true)
+    try {
+      await onGenerate?.(form, referenceFile)
+      onClose()
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const handleFakeSuggestion = async () => {
@@ -256,6 +265,12 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
                   helperText='Helps AI scope the course content and pacing.'
                 />
               </div>
+              <TextInput
+                label='Language'
+                value={form.language}
+                onChange={(value) => updateField('language', value)}
+                placeholder='Vietnamese / English...'
+              />
             </div>
           </section>
 
@@ -304,6 +319,12 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
                 placeholder='Enter course title...'
                 helperText='A clear title helps AI create focused chapter names.'
               />
+              <TextAreaInput
+                label='Additional Instructions'
+                value={form.additionalInstructions}
+                onChange={(value) => updateField('additionalInstructions', value)}
+                placeholder='Any tone/style/constraints you want AI to follow...'
+              />
             </div>
           </section>
         </div>
@@ -318,12 +339,14 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
           </button>
           <button
             type='button'
-            disabled={!canGenerate}
-            onClick={handleGenerate}
+            disabled={!canGenerate || isGenerating}
+            onClick={() => {
+              void handleGenerate()
+            }}
             className='inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300'
           >
             <FiTrendingUp className='h-4 w-4' />
-            Generate Course
+            {isGenerating ? 'Generating...' : 'Generate Course'}
           </button>
         </div>
       </div>
