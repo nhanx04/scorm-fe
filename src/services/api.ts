@@ -110,6 +110,9 @@ export type CourseResponse = {
   title: string
   description?: string | null
   coverImageUrl?: string | null
+  passingScore?: number | null
+  attemptLimit?: number | null
+  durationMin?: number | null
   status?: string | null
   editorState?: unknown
   editorStateSnapshot?: unknown

@@ -67,6 +67,18 @@ const CourseHeader: React.FC = () => {
 
   const imageItems = libraryItems.filter((item) => item.mediaType === 'IMAGE')
 
+  const toNonNegativeInt = (value: string) => {
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) return 0
+    return Math.max(0, Math.floor(parsed))
+  }
+
+  const toPassingScore = (value: string) => {
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) return 0
+    return Math.min(100, Math.max(0, parsed))
+  }
+
   return (
     <div className='space-y-5'>
       <div className='rounded-sm bg-white p-1 shadow-sm'>
@@ -158,6 +170,49 @@ const CourseHeader: React.FC = () => {
                   placeholder='Add learning objective...'
                   className='min-h-[110px] w-full resize-none rounded-xl bg-gray-100 px-4 py-3 text-left text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200'
                 />
+
+                <div className='mt-4 grid gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 text-left md:grid-cols-3'>
+                  <div>
+                    <label className='mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500'>
+                      Passing score (%)
+                    </label>
+                    <input
+                      type='number'
+                      min={0}
+                      max={100}
+                      value={course.passingScore ?? 80}
+                      onChange={(e) => updateCourse({ passingScore: toPassingScore(e.target.value) })}
+                      className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-blue-500 focus:outline-none'
+                    />
+                  </div>
+                  <div>
+                    <label className='mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500'>
+                      Attempt limit
+                    </label>
+                    <input
+                      type='number'
+                      min={0}
+                      value={course.attemptLimit ?? 0}
+                      onChange={(e) => updateCourse({ attemptLimit: toNonNegativeInt(e.target.value) })}
+                      className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-blue-500 focus:outline-none'
+                    />
+                    <p className='mt-1 text-xs text-gray-500'>0 = unlimited attempts</p>
+                  </div>
+                  <div>
+                    <label className='mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500'>
+                      Duration (minutes)
+                    </label>
+                    <input
+                      type='number'
+                      min={0}
+                      value={course.durationMin ?? 0}
+                      onChange={(e) => updateCourse({ durationMin: toNonNegativeInt(e.target.value) })}
+                      className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-blue-500 focus:outline-none'
+                    />
+                    <p className='mt-1 text-xs text-gray-500'>0 = no time limit</p>
+                  </div>
+                </div>
+
                 <div className='mt-4 h-px w-full bg-gray-200' />
               </div>
             </>
