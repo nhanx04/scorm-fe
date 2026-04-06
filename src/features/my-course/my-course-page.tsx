@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { FiSearch, FiChevronDown, FiFileText, FiLayers } from 'react-icons/fi'
+import { FiSearch, FiChevronDown, FiFileText, FiLayers, FiX } from 'react-icons/fi'
 import { CourseCard } from '@/components'
 import CourseFilter from './components/CourseFilter'
 import CreateCourseWithAIModal from './components/CreateCourseWithAIModal'
@@ -12,6 +12,11 @@ import { useNavigate } from 'react-router'
 
 const DEFAULT_COURSE_IMAGE = 'https://via.placeholder.com/640x360?text=Course'
 
+type ToastMessage = {
+  type: 'success' | 'error' | 'loading'
+  text: string
+}
+
 const MyCourseContent: React.FC = () => {
   const navigate = useNavigate()
   const [newCourseOpen, setNewCourseOpen] = useState<boolean>(false)
@@ -20,8 +25,11 @@ const MyCourseContent: React.FC = () => {
   const [isCreatingCourse, setIsCreatingCourse] = useState<boolean>(false)
   const [deletingCourseIds, setDeletingCourseIds] = useState<Set<number>>(new Set())
   const [aiModalOpen, setAiModalOpen] = useState<boolean>(false)
-  const [aiActionMessage, setAiActionMessage] = useState<string | null>(null)
+  
+  // MERGED: Giữ lại cả toastMessage (UX AI Modal) và coursePendingDelete (Tính năng xoá khoá học)
+  const [toastMessage, setToastMessage] = useState<ToastMessage | null>(null)
   const [coursePendingDelete, setCoursePendingDelete] = useState<CourseResponse | null>(null)
+  
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -124,14 +132,12 @@ const MyCourseContent: React.FC = () => {
 
   return (
     <div className='px-20 bg-gray-100 min-h-screen'>
-      {/* 2. LỚP ĐỆM TRẮNG (White Container): Đây là phần bạn đang thiếu */}
+      {/* 2. LỚP ĐỆM TRẮNG (White Container) */}
       <div className='bg-white h-full shadow-lg px-6 py-4'>
         {/* --- Nội dung chính bắt đầu từ đây --- */}
 
         {/* Top actions */}
         <div className='flex items-center gap-4 mb-6 h-5'>
-          {' '}
-          {/* Thêm mb-6 để tách với filter */}
           <div className='relative flex-1'>
             <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-blue-800' />
             <input
@@ -142,10 +148,11 @@ const MyCourseContent: React.FC = () => {
           </div>
           <div className='relative'>
             <button
-              className='flex items-center cursor-pointer gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors'
+              className='flex items-center cursor-pointer gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
               onClick={() => setNewCourseOpen((v: boolean) => !v)}
               ref={newCourseBtnRef}
               type='button'
+              disabled={toastMessage?.type === 'loading'}
             >
               New Course <FiChevronDown />
             </button>
@@ -157,24 +164,25 @@ const MyCourseContent: React.FC = () => {
               >
                 <div className='p-1'>
                   <button
-                    className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-60'
+                    className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed'
                     onClick={() => {
                       void handleCreateFromScratch()
                     }}
                     type='button'
-                    disabled={isCreatingCourse}
+                    disabled={isCreatingCourse || toastMessage?.type === 'loading'}
                   >
                     <FiFileText className='h-4 w-4' />
                     Create from scratch
                   </button>
 
                   <button
-                    className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800'
+                    className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed'
                     onClick={() => {
                       setNewCourseOpen(false)
                       setAiModalOpen(true)
                     }}
                     type='button'
+                    disabled={toastMessage?.type === 'loading'}
                   >
                     <FiLayers className='h-4 w-4' />
                     Create course with AI
@@ -187,8 +195,6 @@ const MyCourseContent: React.FC = () => {
 
         {/* Filters */}
         <div className='mb-6 h-7'>
-          {' '}
-          {/* Bọc Filter để chỉnh khoảng cách nếu cần */}
           <CourseFilter />
         </div>
 
@@ -216,18 +222,52 @@ const MyCourseContent: React.FC = () => {
         {/* --- Kết thúc nội dung chính --- */}
       </div>
 
-      {aiActionMessage ? (
-        <div className='fixed bottom-5 right-5 z-[120] rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow'>
-          <div className='flex items-center gap-3'>
-            <span>{aiActionMessage}</span>
+      {toastMessage ? (
+        <div
+          className={`fixed bottom-5 right-5 z-[120] flex items-center gap-3 rounded-xl border px-5 py-4 text-sm shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out ${
+            toastMessage.type === 'success'
+              ? 'border-emerald-200 bg-emerald-50/95 text-emerald-800'
+              : toastMessage.type === 'error'
+              ? 'border-red-200 bg-red-50/95 text-red-800'
+              : 'border-blue-200 bg-blue-50/95 text-blue-800'
+          }`}
+        >
+          {toastMessage.type === 'loading' && (
+            <svg
+              className='h-5 w-5 animate-spin text-blue-600'
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+            >
+              <circle
+                className='opacity-25'
+                cx='12'
+                cy='12'
+                r='10'
+                stroke='currentColor'
+                strokeWidth='4'
+              ></circle>
+              <path
+                className='opacity-75'
+                fill='currentColor'
+                d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+              ></path>
+            </svg>
+          )}
+
+          <span className='font-medium'>{toastMessage.text}</span>
+
+          {toastMessage.type !== 'loading' && (
             <button
               type='button'
-              onClick={() => setAiActionMessage(null)}
-              className='text-xs font-medium text-emerald-800 hover:text-emerald-950'
+              onClick={() => setToastMessage(null)}
+              className={`ml-2 rounded-md p-1.5 transition-colors ${
+                toastMessage.type === 'success' ? 'hover:bg-emerald-100' : 'hover:bg-red-100'
+              }`}
             >
-              Đóng
+              <FiX className='h-4 w-4' />
             </button>
-          </div>
+          )}
         </div>
       ) : null}
 
@@ -235,33 +275,61 @@ const MyCourseContent: React.FC = () => {
         open={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
         onGenerate={async (form, referenceFile) => {
-          const payload = {
-            courseTitle: form.courseTitle.trim(),
-            courseDescription: form.courseDescription.trim(),
-            targetAudience: form.targetAudience.trim() || 'General learners',
-            audienceProficiencyLevel: form.proficiencyLevel || 'Beginner',
-            duration: form.duration.trim() || '2 hours',
-            language: form.language.trim() || 'Vietnamese',
-            learningOutcomes: form.learningGoal.trim(),
-            prerequisites: form.requiredKnowledge.trim() || 'Không yêu cầu',
-            additionalInstructions: form.additionalInstructions.trim() || undefined
-          }
+          // 1. Đóng modal ngay lập tức để UX mượt hơn
+          setAiModalOpen(false)
 
-          const outline = referenceFile
-            ? await generateCourseOutlineFromFile(referenceFile, payload)
-            : await generateCourseOutline(payload)
-
-          const created = await courseApi.createCourse({
-            title: outline.title || payload.courseTitle,
-            description: outline.description || payload.courseDescription
+          // 2. Hiển thị thông báo trạng thái "Loading"
+          setToastMessage({
+            type: 'loading',
+            text: 'AI đang phân tích và tạo khóa học, vui lòng chờ trong giây lát...'
           })
 
-          const courseId = created.data?.courseId
-          if (courseId) {
-            setAiActionMessage('Đã tạo course từ AI thành công. Đang chuyển tới editor...')
-            navigate(`/my-course/editor/${courseId}`)
-          } else {
-            setAiActionMessage('Đã tạo outline AI nhưng chưa mở được editor.')
+          try {
+            let outline
+
+            if (referenceFile) {
+              outline = await generateCourseOutlineFromFile(referenceFile, {
+                language: form.language.trim() || 'Vietnamese'
+              })
+            } else {
+              const payload = {
+                courseTitle: form.courseTitle.trim(),
+                courseDescription: form.courseDescription.trim(),
+                targetAudience: form.targetAudience.trim() || 'General learners',
+                audienceProficiencyLevel: form.proficiencyLevel || 'Beginner',
+                duration: form.duration.trim() || '2 hours',
+                language: form.language.trim() || 'Vietnamese',
+                learningOutcomes: form.learningGoal.trim(),
+                prerequisites: form.requiredKnowledge.trim() || 'Không yêu cầu',
+                additionalInstructions: form.additionalInstructions.trim() || undefined
+              }
+              outline = await generateCourseOutline(payload)
+            }
+
+            const created = await courseApi.createCourse({
+              title: outline?.title || form.courseTitle.trim() || 'Untitled AI Course',
+              description: outline?.description || form.courseDescription.trim() || 'Generated by AI'
+            })
+
+            const courseId = created.data?.courseId
+            if (courseId) {
+              setToastMessage({
+                type: 'success',
+                text: 'Đã tạo course từ AI thành công. Đang chuyển tới editor...'
+              })
+              navigate(`/my-course/editor/${courseId}`)
+            } else {
+              setToastMessage({
+                type: 'error',
+                text: 'Đã tạo outline AI nhưng chưa mở được editor.'
+              })
+            }
+          } catch (error) {
+            console.error('Lỗi khi tạo course bằng AI:', error)
+            setToastMessage({
+              type: 'error',
+              text: 'Có lỗi xảy ra khi tạo course bằng AI. Vui lòng kiểm tra kết nối và thử lại!'
+            })
           }
         }}
       />

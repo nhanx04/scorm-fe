@@ -106,6 +106,11 @@ export const generateCourseOutlineFromFile = async (
     formData.append('request', JSON.stringify(payload))
   }
 
-  const { data } = await api.post('/ai/generate-outline-from-file', formData)
+  // Đã thêm header multipart/form-data để backend có thể đọc được file
+  const { data } = await api.post('/ai/generate-outline-from-file', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
   return data
 }
