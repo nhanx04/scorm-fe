@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useParams } from 'react-router'
 import { useCourseEditorStore } from '../../store/use-course-editor-store'
 import ExportActions from './ExportActions'
 import ThemePanel from './theme/ThemePanel'
@@ -13,6 +14,7 @@ const getImageUrl = (metadata: unknown) => {
 }
 
 const CourseHeader: React.FC = () => {
+  const { courseId: routeCourseId } = useParams<{ courseId: string }>()
   const course = useCourseEditorStore((state) => state.course)
   const updateCourse = useCourseEditorStore((state) => state.updateCourse)
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
@@ -94,7 +96,7 @@ const CourseHeader: React.FC = () => {
           >
             {collapsed ? 'Expand Header' : 'Thu gọn'}
           </button>
-          <ExportActions courseId={course.serverId ?? course.id} />
+          <ExportActions courseId={course.serverId ?? routeCourseId ?? course.id} />
         </div>
 
         <div className='mx-auto mt-6 flex max-w-5xl flex-col items-center gap-6 text-center'>
