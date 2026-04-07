@@ -7,6 +7,7 @@ import { PageLoading } from '@/components'
 import { useDeleteOrganization, useOrganizations, useOrgLogoUrlMap } from './hook/useOrganizations'
 import OrganizationCard from './components/OrganizationCard'
 import CreateOrgDialog from './components/CreateOrgDialog'
+import ConfirmDialog from '@/features/my-library/components/ConfirmDialog'
 
 const OrgListContent: React.FC = () => {
   const { data = [], isLoading } = useOrganizations()
@@ -14,6 +15,8 @@ const OrgListContent: React.FC = () => {
   const deleteOrganization = useDeleteOrganization()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deletingOrgId, setDeletingOrgId] = useState<number | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingDeleteOrgId, setPendingDeleteOrgId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate()
 
@@ -28,16 +31,16 @@ const OrgListContent: React.FC = () => {
     })
   }, [data, searchTerm])
 
-  const handleDeleteOrganization = async (orgId: number) => {
-    const confirmed = window.confirm('Are you sure you want to delete this organization?')
-    if (!confirmed) return
+  const handleDeleteOrganization = async () => {
+    if (!pendingDeleteOrgId) return
 
     try {
-      setDeletingOrgId(orgId)
-      await deleteOrganization.mutateAsync(orgId)
+      setDeletingOrgId(pendingDeleteOrgId)
+      await deleteOrganization.mutateAsync(pendingDeleteOrgId)
+      setConfirmOpen(false)
+      setPendingDeleteOrgId(null)
     } catch (error) {
       console.error('Failed to delete organization', error)
-      window.alert('Delete organization failed. Please try again.')
     } finally {
       setDeletingOrgId(null)
     }
@@ -98,7 +101,8 @@ const OrgListContent: React.FC = () => {
                 thumbnailUrl={org.logoMediaId ? logoUrlMap.get(org.logoMediaId) : undefined}
                 onClick={() => navigate(`/organizations/${org.orgId}`)}
                 onDelete={() => {
-                  void handleDeleteOrganization(org.orgId)
+                  setPendingDeleteOrgId(org.orgId)
+                  setConfirmOpen(true)
                 }}
                 isDeleting={deletingOrgId === org.orgId}
               />
@@ -108,6 +112,23 @@ const OrgListContent: React.FC = () => {
       </div>
 
       <CreateOrgDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+      <ConfirmDialog
+        open={confirmOpen}
+        title='Delete organization'
+        message='Are you sure you want to delete this organization?'
+        confirmLabel='Delete'
+        cancelLabel='Cancel'
+        danger
+        loading={deleteOrganization.isPending}
+        onConfirm={() => {
+          void handleDeleteOrganization()
+        }}
+        onCancel={() => {
+          if (deleteOrganization.isPending) return
+          setConfirmOpen(false)
+          setPendingDeleteOrgId(null)
+        }}
+      />
     </div>
   )
 }

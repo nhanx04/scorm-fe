@@ -86,23 +86,11 @@ const MyCourseContent: React.FC = () => {
     }
   }, [])
 
-  const handleCreateFromScratch = async () => {
+  const handleCreateFromScratch = () => {
     if (isCreatingCourse) return
 
-    try {
-      setIsCreatingCourse(true)
-      setNewCourseOpen(false)
-      const response = await courseApi.createCourse({
-        title: 'Untitled Course'
-      })
-      const courseId = response.data?.courseId
-      if (!courseId) return
-      navigate(`/my-course/editor/${courseId}`)
-    } catch (error) {
-      console.error('Failed to create course', error)
-    } finally {
-      setIsCreatingCourse(false)
-    }
+    setNewCourseOpen(false)
+    navigate('/my-course/editor/new')
   }
 
   const handleOpenCourse = (courseId: number) => {
@@ -188,9 +176,7 @@ const MyCourseContent: React.FC = () => {
                 <div className='p-1'>
                   <button
                     className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed'
-                    onClick={() => {
-                      void handleCreateFromScratch()
-                    }}
+                    onClick={handleCreateFromScratch}
                     type='button'
                     disabled={isCreatingCourse || toastMessage?.type === 'loading'}
                   >

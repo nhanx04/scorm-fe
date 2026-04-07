@@ -1,6 +1,6 @@
 // LIMIT THE FILE CONTENT TO AT MOST 300 LINES. IF MORE CONTENT NEEDS TO BE ADDED USE THE str-replace-editor TOOL TO EDIT THE FILE AFTER IT HAS BEEN CREATED.
 import React, { useState } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
 import { OverlayLoading, PageLoading, SectionLoading } from '@/components'
 import { useMembers, useOrganizations, useOrgLogoUrlMap, useUpdateOrganization } from './hook/useOrganizations'
@@ -10,12 +10,14 @@ import OrganizationThumbnailPickerDialog from './components/OrganizationThumbnai
 
 const OrgDetailContent: React.FC = () => {
   const { orgId } = useParams<'orgId'>()
+  const navigate = useNavigate()
   const { data: orgs = [], isLoading: loadingOrgs } = useOrganizations()
   const logoUrlMap = useOrgLogoUrlMap()
   const org = orgs.find((o) => o.orgId === Number(orgId))
   const { data: members = [], isLoading: loadingMembers } = useMembers(org?.orgId)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [thumbnailPickerOpen, setThumbnailPickerOpen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const updateOrganization = useUpdateOrganization(org?.orgId ?? 0)
 
   if (loadingOrgs) {
@@ -33,7 +35,16 @@ const OrgDetailContent: React.FC = () => {
       <div className='bg-white h-full shadow-lg px-6 py-4 flex gap-6'>
         {/* main */}
         <div className='flex-1'>
-          <div className='mb-6 rounded-xl border border-gray-200 bg-gray-100 h-50 p-4'>
+          <button
+            type='button'
+            onClick={() => navigate('/organization')}
+            className='mb-4 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50'
+          >
+            Back
+          </button>
+          <div
+            className={`mb-6 rounded-xl border border-gray-200 bg-gray-100 p-4 pb-12 relative transition-all duration-300 ease-in-out ${expanded ? 'max-h-none overflow-visible' : 'max-h-48 overflow-hidden'}`}
+          >
             <div className='flex flex-col gap-4 md:flex-row md:items-start md:justify-between'>
               <div className='flex items-start gap-4'>
                 <div className='relative'>
@@ -50,14 +61,14 @@ const OrgDetailContent: React.FC = () => {
                     Edit
                   </button>
                 </div>
-                <div>
-                  <h2 className='text-xl font-semibold text-blue-900'>{org.orgName}</h2>
+                <div className='min-w-0 break-words'>
+                  <h2 className='text-xl font-semibold text-blue-900 break-words'>{org.orgName}</h2>
                   {org.description ? (
-                    <p className='text-sm text-gray-600 mt-1'>{org.description}</p>
+                    <p className='text-sm text-gray-600 mt-1 break-words max-w-xl'>{org.description}</p>
                   ) : (
-                    <p className='text-sm text-gray-400 mt-1'>No description yet.</p>
+                    <p className='text-sm text-gray-400 mt-1 break-words'>No description yet.</p>
                   )}
-                  <p className='mt-2 text-xs text-gray-500'>
+                  <p className='mt-2 text-xs text-gray-500 break-words'>
                     Owner ID: {org.ownerId} • Max authors: {org.maxAuthors ?? 'N/A'}
                   </p>
                 </div>
@@ -71,6 +82,18 @@ const OrgDetailContent: React.FC = () => {
                 Invite
               </button>
             </div>
+
+            {!expanded ? (
+              <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-100 to-transparent' />
+            ) : null}
+
+            <button
+              type='button'
+              onClick={() => setExpanded((prev) => !prev)}
+              className='absolute bottom-3 right-4 bg-gray-100 px-1 text-sm font-medium text-blue-700 hover:text-blue-800'
+            >
+              {expanded ? 'Show less' : 'Show more'}
+            </button>
           </div>
 
           <div className='border border-dashed border-gray-300 rounded-lg p-8 text-gray-400 text-sm text-center'>
