@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react'
 import { FiPlus, FiSearch, FiSmile } from 'react-icons/fi'
 import { useNavigate } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
+import { PageLoading } from '@/components'
 import { useDeleteOrganization, useOrganizations, useOrgLogoUrlMap } from './hook/useOrganizations'
 import OrganizationCard from './components/OrganizationCard'
 import CreateOrgDialog from './components/CreateOrgDialog'
@@ -56,6 +57,8 @@ const OrgListContent: React.FC = () => {
               type='text'
               placeholder='Type here to search...'
               className='w-full pl-10 pr-4 py-2 border-b border-gray-300 bg-transparent focus:outline-none focus:border-blue-500 transition-colors'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
@@ -69,7 +72,7 @@ const OrgListContent: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <p className='py-10 text-center text-sm text-gray-500'>Loading organizations...</p>
+          <PageLoading loading={isLoading} text='Loading organizations...' minHeightClassName='min-h-[60vh]' />
         ) : filteredOrganizations.length === 0 ? (
           <div className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-16 text-center'>
             <div className='mb-3 rounded-full bg-indigo-100 p-3 text-indigo-600'>

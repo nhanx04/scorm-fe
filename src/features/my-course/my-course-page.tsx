@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { FiSearch, FiChevronDown, FiFileText, FiLayers, FiUpload, FiX } from 'react-icons/fi'
-import { CourseCard } from '@/components'
+import { CourseCard, PageLoading } from '@/components'
 import CourseFilter from './components/CourseFilter'
 import CreateCourseWithAIModal from './components/CreateCourseWithAIModal'
 import DeleteCourseConfirmDialog from './components/DeleteCourseConfirmDialog'
@@ -243,7 +243,7 @@ const MyCourseContent: React.FC = () => {
 
         {/* Course grid */}
         {isLoadingCourses ? (
-          <div className='text-gray-500'>Loading courses...</div>
+          <PageLoading loading={isLoadingCourses} text='Loading courses...' minHeightClassName='min-h-[60vh]' />
         ) : (
           <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5'>
             {courses.map((course) => (

@@ -43,7 +43,7 @@ const FolderList: React.FC<FolderListProps> = ({
         <h2 className='text-xl font-semibold text-gray-900'>Thư viện của tôi</h2>
         <div className='flex items-center gap-2'>
           <button
-            className='inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition-all duration-150 hover:brightness-110'
+            className='inline-flex items-center gap-2 rounded-lg bg-blue-900 px-3 py-2 text-sm font-medium text-white transition-all duration-150 hover:brightness-110'
             onClick={onOpenCreate}
             type='button'
           >

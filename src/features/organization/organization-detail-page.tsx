@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import { useParams } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
+import { OverlayLoading, PageLoading, SectionLoading } from '@/components'
 import { useMembers, useOrganizations, useOrgLogoUrlMap, useUpdateOrganization } from './hook/useOrganizations'
 import InviteDialog from './components/InviteDialog'
 import MemberList from './components/MemberList'
@@ -9,13 +10,17 @@ import OrganizationThumbnailPickerDialog from './components/OrganizationThumbnai
 
 const OrgDetailContent: React.FC = () => {
   const { orgId } = useParams<'orgId'>()
-  const { data: orgs = [] } = useOrganizations()
+  const { data: orgs = [], isLoading: loadingOrgs } = useOrganizations()
   const logoUrlMap = useOrgLogoUrlMap()
   const org = orgs.find((o) => o.orgId === Number(orgId))
-  const { data: members = [] } = useMembers(org?.orgId)
+  const { data: members = [], isLoading: loadingMembers } = useMembers(org?.orgId)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [thumbnailPickerOpen, setThumbnailPickerOpen] = useState(false)
   const updateOrganization = useUpdateOrganization(org?.orgId ?? 0)
+
+  if (loadingOrgs) {
+    return <PageLoading loading={loadingOrgs} text='Loading organization...' minHeightClassName='min-h-[60vh]' />
+  }
 
   if (!org) return <p className='p-8'>Organization not found</p>
 
@@ -74,8 +79,13 @@ const OrgDetailContent: React.FC = () => {
         </div>
 
         {/* sidebar */}
-        <div className='w-64'>
-          <MemberList members={members} />
+        <div className='w-64 relative'>
+          {loadingMembers ? (
+            <SectionLoading loading={loadingMembers} text='Loading members...' />
+          ) : (
+            <MemberList members={members} />
+          )}
+          <OverlayLoading loading={updateOrganization.isPending} text='Updating...' />
         </div>
       </div>
 

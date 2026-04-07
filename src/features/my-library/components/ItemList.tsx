@@ -101,7 +101,7 @@ const ItemList: React.FC<ItemListProps> = ({
         <h2 className='text-xl font-semibold text-gray-900'>{library.libraryName}</h2>
         <div className='ml-auto flex items-center gap-2'>
           <button
-            className='inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition-all duration-150 hover:brightness-110'
+            className='inline-flex items-center gap-2 rounded-lg bg-blue-900 px-3 py-2 text-sm font-medium text-white transition-all duration-150 hover:brightness-110'
             onClick={onOpenUpload}
             type='button'
           >

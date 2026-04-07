@@ -1,6 +1,7 @@
 // LIMIT THE FILE CONTENT TO AT MOST 300 LINES. IF MORE CONTENT NEEDS TO BE ADDED USE THE str-replace-editor TOOL TO EDIT THE FILE AFTER IT HAS BEEN CREATED.
 import React, { useMemo, useState } from 'react'
 import MainLayout from '@/layouts/main-layout'
+import { OverlayLoading, PageLoading } from '@/components'
 import {
   useBulkDeleteLibraries,
   useBulkDeleteMedia,
@@ -116,36 +117,33 @@ const MyLibraryContent: React.FC = () => {
     <div className='px-20 bg-gray-100 min-h-screen'>
       <div className='bg-white h-full shadow-lg px-6 py-4'>
         {loadingLibs ? (
-          <p>Loading...</p>
+          <PageLoading loading={loadingLibs} text='Loading libraries...' minHeightClassName='min-h-[60vh]' />
         ) : selected ? (
-          <>
-            {loadingItems ? (
-              <p>Loading items...</p>
-            ) : (
-              <ItemList
-                library={selected}
-                items={items}
-                onBack={() => setSelected(null)}
-                onOpenUpload={() => setUploadOpen(true)}
-                onRefresh={() => {
-                  void refetchItems()
-                }}
-                deleting={deleting}
-                onDeleteMedia={(mediaId, mediaTitle) => {
-                  openConfirm('Delete image', `Are you sure you want to delete image "${mediaTitle}"?`, {
-                    kind: 'delete-media',
-                    mediaId
-                  })
-                }}
-                onBulkDeleteMedia={(payload) => {
-                  openConfirm('Delete selected images', `Delete ${payload.mediaIds.length} selected image(s)?`, {
-                    kind: 'bulk-delete-media',
-                    payload
-                  })
-                }}
-              />
-            )}
-          </>
+          <div className='relative'>
+            <ItemList
+              library={selected}
+              items={items}
+              onBack={() => setSelected(null)}
+              onOpenUpload={() => setUploadOpen(true)}
+              onRefresh={() => {
+                void refetchItems()
+              }}
+              deleting={deleting}
+              onDeleteMedia={(mediaId, mediaTitle) => {
+                openConfirm('Delete image', `Are you sure you want to delete image "${mediaTitle}"?`, {
+                  kind: 'delete-media',
+                  mediaId
+                })
+              }}
+              onBulkDeleteMedia={(payload) => {
+                openConfirm('Delete selected images', `Delete ${payload.mediaIds.length} selected image(s)?`, {
+                  kind: 'bulk-delete-media',
+                  payload
+                })
+              }}
+            />
+            <OverlayLoading loading={loadingItems} text='Loading items...' />
+          </div>
         ) : (
           <FolderList
             data={libraries}
