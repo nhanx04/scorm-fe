@@ -46,16 +46,21 @@ const queryClient = new QueryClient()
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 export default function App() {
-  return (
-    // 2. Bọc GoogleOAuthProvider ở ngoài cùng (hoặc bao quanh AuthProvider)
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Outlet />
-        </AuthProvider>
-      </QueryClientProvider>
-    </GoogleOAuthProvider>
+  const appContent = (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+    </QueryClientProvider>
   )
+
+  // Không làm crash toàn app nếu thiếu VITE_GOOGLE_CLIENT_ID trên môi trường deploy
+  if (!GOOGLE_CLIENT_ID) {
+    console.warn('Missing VITE_GOOGLE_CLIENT_ID. Google OAuth is disabled.')
+    return appContent
+  }
+
+  return <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{appContent}</GoogleOAuthProvider>
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
