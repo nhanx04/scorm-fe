@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { NotificationListResponse } from '@/features/notification/types/notification.types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -93,6 +94,8 @@ export type CreateCourseRequest = {
   attemptLimit?: number
   durationMin?: number
   status?: string
+  tags?: string[] // Bổ sung trường tags cho yêu cầu tạo khóa học mới
+  isFavorite?: boolean // Bổ sung trạng thái yêu thích (sẽ kế thừa cho cả UpdateCourseRequest)
   textHtml?: string
   themeOverride?: unknown
   layoutMode?: string
@@ -114,6 +117,8 @@ export type CourseResponse = {
   attemptLimit?: number | null
   durationMin?: number | null
   status?: string | null
+  tags?: string[] // Bổ sung trường tags cho response khóa học trả về
+  isFavorite?: boolean // Bổ sung trạng thái yêu thích
   editorState?: unknown
   editorStateSnapshot?: unknown
   themeOverride?: unknown
@@ -153,6 +158,7 @@ export const scormApi = {
   downloadPackage: (id: number | string) => api.get(`/scorm-packages/${id}/download`, { responseType: 'blob' }),
   deletePackage: (id: number | string) => api.delete(`/scorm-packages/${id}`)
 }
+
 // --- Media APIs ---
 export const mediaApi = {
   // Upload image -> trả về thông tin ảnh đã lưu DB
@@ -209,4 +215,20 @@ export const mediaApi = {
     api.get<{ id: number; embedUrl: string; createdAt: string; updatedAt: string }>(`/media/video-embed/${id}`),
 
   deleteVideoEmbed: (id: number | string) => api.delete(`/media/video-embed/${id}`)
+}
+
+// --- Notification APIs ---
+export const notificationApi = {
+  // Lấy danh sách thông báo (có phân trang)
+  getNotifications: (page: number = 0, size: number = 10) =>
+    api.get<NotificationListResponse>(`/notifications?page=${page}&size=${size}`),
+
+  // Lấy số lượng thông báo chưa đọc
+  getUnreadCount: () => api.get<number>('/notifications/unread-count'),
+
+  // Đánh dấu 1 thông báo là đã đọc
+  markAsRead: (notificationId: number) => api.patch(`/notifications/${notificationId}/read`),
+
+  // Đánh dấu tất cả thông báo là đã đọc
+  markAllAsRead: () => api.patch('/notifications/read-all')
 }
