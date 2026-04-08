@@ -20,7 +20,7 @@ const OrganizationCard: React.FC<Props> = ({ org, onClick, onDelete, isDeleting 
     <div
       onClick={onClick}
       role='button'
-      className='group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] hover:border-blue-200 hover:shadow-md'
+      className='group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300'
     >
       <div className='relative h-36 w-full overflow-hidden bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100'>
         {thumbnailUrl ? (

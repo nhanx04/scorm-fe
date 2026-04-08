@@ -1,6 +1,5 @@
-// LIMIT THE FILE CONTENT TO AT MOST 300 LINES. IF MORE CONTENT NEEDS TO BE ADDED USE THE str-replace-editor TOOL TO EDIT THE FILE AFTER IT HAS BEEN CREATED.
 import React, { useMemo, useState } from 'react'
-import { FiPlus, FiSearch, FiSmile } from 'react-icons/fi'
+import { FiClock, FiFolder, FiPlus, FiSearch, FiSmile, FiType } from 'react-icons/fi'
 import { useNavigate } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
 import { PageLoading } from '@/components'
@@ -18,22 +17,32 @@ const OrgListContent: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDeleteOrgId, setPendingDeleteOrgId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [sortMode, setSortMode] = useState<'TIME_DESC' | 'ALPHA_ASC'>('TIME_DESC')
   const navigate = useNavigate()
 
   const filteredOrganizations = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase()
-    if (!keyword) return data
+    const filtered = !keyword
+      ? data
+      : data.filter(
+          (org) =>
+            (org.orgName || '').toLowerCase().includes(keyword) ||
+            (org.description || '').toLowerCase().includes(keyword)
+        )
 
-    return data.filter((org) => {
-      const name = org.orgName?.toLowerCase() || ''
-      const description = org.description?.toLowerCase() || ''
-      return name.includes(keyword) || description.includes(keyword)
+    return [...filtered].sort((a, b) => {
+      if (sortMode === 'ALPHA_ASC') {
+        return (a.orgName || '').localeCompare(b.orgName || '')
+      }
+
+      const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime()
+      const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime()
+      return bTime - aTime
     })
-  }, [data, searchTerm])
+  }, [data, searchTerm, sortMode])
 
   const handleDeleteOrganization = async () => {
     if (!pendingDeleteOrgId) return
-
     try {
       setDeletingOrgId(pendingDeleteOrgId)
       await deleteOrganization.mutateAsync(pendingDeleteOrgId)
@@ -47,53 +56,97 @@ const OrgListContent: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-100 px-20'>
-      <div className='h-full bg-white px-6 py-5 shadow-lg'>
-        <div className='mb-5 flex flex-wrap items-center justify-between gap-3'>
-          <h1 className='text-2xl font-semibold tracking-tight text-gray-900'>Organizations</h1>
-        </div>
+    <div className='flex h-full flex-1 overflow-hidden bg-white'>
+      <div className='w-[310px] shrink-0 overflow-y-auto border-r border-gray-200 bg-[#F7F9FA] p-6'>
+        <button
+          onClick={() => setDialogOpen(true)}
+          className='mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-800'
+          type='button'
+        >
+          <FiPlus className='h-4 w-4' />
+          New Organization
+        </button>
 
-        <div className='mb-6 flex items-center gap-4'>
-          <div className='relative flex-1'>
-            <FiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-blue-800' />
+        <div className='mt-8 space-y-3'>
+          <p className='text-sm font-semibold text-gray-900'>Workspace</p>
+          <button className='flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-sm text-gray-700'>
+            <FiFolder className='h-4 w-4' />
+            My organizations
+          </button>
+
+          <div className='flex flex-wrap items-center gap-2'>
+            <button
+              type='button'
+              onClick={() => setSortMode('TIME_DESC')}
+              className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                sortMode === 'TIME_DESC'
+                  ? 'bg-blue-900 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <FiClock className='h-3.5 w-3.5' />
+              Time
+            </button>
+
+            <button
+              type='button'
+              onClick={() => setSortMode('ALPHA_ASC')}
+              className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                sortMode === 'ALPHA_ASC'
+                  ? 'bg-blue-900 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <FiType className='h-3.5 w-3.5' />
+              A-Z
+            </button>
+          </div>
+
+          <div className='max-h-[380px] space-y-1 overflow-y-auto rounded-xl border border-gray-200 bg-white p-2'>
+            {filteredOrganizations.length === 0 ? (
+              <p className='px-2 py-3 text-xs text-gray-500'>No organizations</p>
+            ) : (
+              filteredOrganizations.map((org) => (
+                <button
+                  key={org.orgId}
+                  type='button'
+                  onClick={() => navigate(`/organizations/${org.orgId}`)}
+                  className='w-full truncate rounded-md px-2 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100'
+                  title={org.orgName}
+                >
+                  {org.orgName}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className='flex-1 overflow-y-auto bg-white px-16 py-10'>
+        <h1 className='mb-6 text-[32px] font-bold text-gray-900'>Organizations</h1>
+
+        <div className='mx-auto mb-8 flex max-w-[700px] flex-col gap-3'>
+          <div className='relative'>
+            <FiSearch className='absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500' />
             <input
               type='text'
-              placeholder='Type here to search...'
-              className='w-full pl-10 pr-4 py-2 border-b border-gray-300 bg-transparent focus:outline-none focus:border-blue-500 transition-colors'
+              placeholder='Search organizations by name or description...'
+              className='w-full rounded-xl border border-gray-300 py-3 pl-12 pr-4 text-base transition-colors focus:outline-none focus:ring-1 focus:ring-gray-800'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button
-            onClick={() => setDialogOpen(true)}
-            className='inline-flex items-center gap-2 rounded-xl cursor-pointer bg-blue-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:brightness-110'
-            type='button'
-          >
-            <FiPlus className='h-4 w-4' />
-            New Organization
-          </button>
         </div>
 
         {isLoading ? (
-          <PageLoading loading={isLoading} text='Loading organizations...' minHeightClassName='min-h-[60vh]' />
+          <PageLoading loading text='Loading organizations...' minHeightClassName='min-h-[60vh]' />
         ) : filteredOrganizations.length === 0 ? (
-          <div className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-16 text-center'>
-            <div className='mb-3 rounded-full bg-indigo-100 p-3 text-indigo-600'>
-              <FiSmile className='h-6 w-6' />
-            </div>
-            <h3 className='text-lg font-semibold text-gray-800'>No organizations yet</h3>
-            <p className='mt-1 text-sm text-gray-500'>Create your first organization to get started.</p>
-            <button
-              onClick={() => setDialogOpen(true)}
-              type='button'
-              className='mt-5 inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:brightness-110'
-            >
-              <FiPlus className='h-4 w-4' />
-              New Organization
-            </button>
+          <div className='flex flex-col items-center rounded-xl border border-dashed border-gray-300 bg-gray-50 py-16 text-center text-gray-500'>
+            <FiSmile className='mb-3 h-10 w-10 text-gray-300' />
+            <p>No organizations found.</p>
           </div>
         ) : (
-          <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
+          <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
             {filteredOrganizations.map((org) => (
               <OrganizationCard
                 key={org.orgId}
@@ -120,9 +173,7 @@ const OrgListContent: React.FC = () => {
         cancelLabel='Cancel'
         danger
         loading={deleteOrganization.isPending}
-        onConfirm={() => {
-          void handleDeleteOrganization()
-        }}
+        onConfirm={() => void handleDeleteOrganization()}
         onCancel={() => {
           if (deleteOrganization.isPending) return
           setConfirmOpen(false)

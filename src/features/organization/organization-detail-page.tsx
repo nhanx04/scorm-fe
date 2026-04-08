@@ -48,12 +48,12 @@ const OrgDetailContent: React.FC = () => {
   const logoUrl = org.logoMediaId ? logoUrlMap.get(org.logoMediaId) : undefined
 
   return (
-    <div className='min-h-screen bg-gray-100 px-4 py-5 md:px-8 xl:px-14'>
-      <div className='mx-auto max-w-7xl'>
+    <div className='flex h-full flex-1 overflow-hidden bg-white'>
+      <div className='flex-1 overflow-y-auto bg-white px-16 py-10'>
         <button
           type='button'
           onClick={() => navigate('/organization')}
-          className='mb-3 inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50'
+          className='mb-4 inline-flex items-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
         >
           Back
         </button>

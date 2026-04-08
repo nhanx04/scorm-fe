@@ -51,18 +51,18 @@ const ResourcesTab: React.FC<ResourcesTabProps> = ({ orgId, canManage = false, o
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:flex-row md:items-center'>
+      <div className='flex flex-col gap-3 rounded-2xl bg-white md:flex-row md:items-center'>
         <input
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder='Search resources...'
-          className='w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2 md:max-w-sm'
+          className='w-full rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none ring-gray-700 focus:ring-1 md:max-w-sm'
         />
 
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as OrganizationResourceType | 'ALL')}
-          className='rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2'
+          className='rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none ring-gray-700 focus:ring-1'
         >
           <option value='ALL'>All types</option>
           <option value='MEDIA'>Media</option>
@@ -73,7 +73,7 @@ const ResourcesTab: React.FC<ResourcesTabProps> = ({ orgId, canManage = false, o
         <button
           type='button'
           onClick={() => setShareOpen(true)}
-          className='rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 md:ml-auto'
+          className='rounded-full bg-blue-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-800 md:ml-auto'
         >
           Share Resource
         </button>
@@ -103,10 +103,14 @@ const ResourcesTab: React.FC<ResourcesTabProps> = ({ orgId, canManage = false, o
         </div>
       )}
 
-      <ShareResourceModal open={shareOpen} onClose={() => setShareOpen(false)} onConfirm={handleShare} isPending={shareMutation.isPending} />
+      <ShareResourceModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        onConfirm={handleShare}
+        isPending={shareMutation.isPending}
+      />
     </div>
   )
 }
 
 export default ResourcesTab
-
