@@ -94,6 +94,8 @@ export type CreateCourseRequest = {
   attemptLimit?: number
   durationMin?: number
   status?: string
+  tags?: string[] // Bổ sung trường tags cho yêu cầu tạo khóa học mới
+  isFavorite?: boolean // Bổ sung trạng thái yêu thích (sẽ kế thừa cho cả UpdateCourseRequest)
   textHtml?: string
   themeOverride?: unknown
   layoutMode?: string
@@ -115,6 +117,8 @@ export type CourseResponse = {
   attemptLimit?: number | null
   durationMin?: number | null
   status?: string | null
+  tags?: string[] // Bổ sung trường tags cho response khóa học trả về
+  isFavorite?: boolean // Bổ sung trạng thái yêu thích
   editorState?: unknown
   editorStateSnapshot?: unknown
   themeOverride?: unknown
