@@ -1,128 +1,120 @@
-// LIMIT THE FILE CONTENT TO AT MOST 300 LINES. IF MORE CONTENT NEEDS TO BE ADDED USE THE str-replace-editor TOOL TO EDIT THE FILE AFTER IT HAS BEEN CREATED.
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
-import { OverlayLoading, PageLoading, SectionLoading } from '@/components'
-import { useMembers, useOrganizations, useOrgLogoUrlMap, useUpdateOrganization } from './hook/useOrganizations'
+import { PageLoading } from '@/components'
 import InviteDialog from './components/InviteDialog'
-import MemberList from './components/MemberList'
-import OrganizationThumbnailPickerDialog from './components/OrganizationThumbnailPickerDialog'
+import OrgHeader from './components/OrgHeader'
+import Tabs from './components/Tabs'
+import ResourcesTab from './components/ResourcesTab'
+import MembersTable from './components/MembersTable'
+import ActivityTimeline from './components/ActivityTimeline'
+import { useOrgLogoUrlMap } from './hook/useOrganizations'
+import { useOrganizationActivities, useOrganizationDetail, useOrganizationMembers } from './hook/useOrganization'
+
+const TAB_ITEMS = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'members', label: 'Members' },
+  { key: 'resources', label: 'Resources' },
+  { key: 'activity', label: 'Activity' }
+]
 
 const OrgDetailContent: React.FC = () => {
   const { orgId } = useParams<'orgId'>()
   const navigate = useNavigate()
-  const { data: orgs = [], isLoading: loadingOrgs } = useOrganizations()
-  const logoUrlMap = useOrgLogoUrlMap()
-  const org = orgs.find((o) => o.orgId === Number(orgId))
-  const { data: members = [], isLoading: loadingMembers } = useMembers(org?.orgId)
-  const [inviteOpen, setInviteOpen] = useState(false)
-  const [thumbnailPickerOpen, setThumbnailPickerOpen] = useState(false)
-  const [expanded, setExpanded] = useState(false)
-  const updateOrganization = useUpdateOrganization(org?.orgId ?? 0)
+  const numericOrgId = Number(orgId)
 
-  if (loadingOrgs) {
-    return <PageLoading loading={loadingOrgs} text='Loading organization...' minHeightClassName='min-h-[60vh]' />
+  const [activeTab, setActiveTab] = useState('resources')
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  const { data: org, isLoading: loadingOrg } = useOrganizationDetail(numericOrgId)
+  const { data: members = [], isLoading: loadingMembers } = useOrganizationMembers(numericOrgId)
+  const { data: activities = [], isLoading: loadingActivities } = useOrganizationActivities(numericOrgId)
+  const logoUrlMap = useOrgLogoUrlMap()
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    window.setTimeout(() => setToast(null), 2500)
+  }
+
+  const canManage = useMemo(() => members.some((m) => m.role === 'OWNER'), [members])
+
+  if (loadingOrg) {
+    return <PageLoading loading text='Loading organization...' minHeightClassName='min-h-[60vh]' />
   }
 
   if (!org) return <p className='p-8'>Organization not found</p>
 
-  const thumbnail =
-    (org.logoMediaId ? logoUrlMap.get(org.logoMediaId) : undefined) ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(org.orgName)}&background=1E3A8A&color=fff&size=240`
+  const logoUrl = org.logoMediaId ? logoUrlMap.get(org.logoMediaId) : undefined
 
   return (
-    <div className='px-20 bg-gray-100 min-h-screen'>
-      <div className='bg-white h-full shadow-lg px-6 py-4 flex gap-6'>
-        {/* main */}
-        <div className='flex-1'>
-          <button
-            type='button'
-            onClick={() => navigate('/organization')}
-            className='mb-4 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50'
-          >
-            Back
-          </button>
-          <div
-            className={`mb-6 rounded-xl border border-gray-200 bg-gray-100 p-4 pb-12 relative transition-all duration-300 ease-in-out ${expanded ? 'max-h-none overflow-visible' : 'max-h-48 overflow-hidden'}`}
-          >
-            <div className='flex flex-col gap-4 md:flex-row md:items-start md:justify-between'>
-              <div className='flex items-start gap-4'>
-                <div className='relative'>
-                  <img
-                    src={thumbnail}
-                    alt={org.orgName}
-                    className='h-42 w-42 rounded-xl border border-gray-200 object-cover'
-                  />
-                  <button
-                    type='button'
-                    onClick={() => setThumbnailPickerOpen(true)}
-                    className='absolute -bottom-2 -right-2 rounded-full bg-white border border-gray-200 p-1 text-xs shadow'
-                  >
-                    Edit
-                  </button>
-                </div>
-                <div className='min-w-0 break-words'>
-                  <h2 className='text-xl font-semibold text-blue-900 break-words'>{org.orgName}</h2>
-                  {org.description ? (
-                    <p className='text-sm text-gray-600 mt-1 break-words max-w-xl'>{org.description}</p>
-                  ) : (
-                    <p className='text-sm text-gray-400 mt-1 break-words'>No description yet.</p>
-                  )}
-                  <p className='mt-2 text-xs text-gray-500 break-words'>
-                    Owner ID: {org.ownerId} • Max authors: {org.maxAuthors ?? 'N/A'}
-                  </p>
-                </div>
-              </div>
+    <div className='min-h-screen bg-gray-100 px-4 py-5 md:px-8 xl:px-14'>
+      <div className='mx-auto max-w-7xl'>
+        <button
+          type='button'
+          onClick={() => navigate('/organization')}
+          className='mb-3 inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50'
+        >
+          Back
+        </button>
 
-              <button
-                onClick={() => setInviteOpen(true)}
-                className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium'
-                type='button'
-              >
-                Invite
-              </button>
+        <OrgHeader
+          organization={org}
+          memberCount={members.length}
+          logoUrl={logoUrl}
+          onInvite={() => setInviteOpen(true)}
+          onSettings={() => showToast('Settings coming soon')}
+          canManage={canManage}
+        />
+
+        <Tabs items={TAB_ITEMS} activeKey={activeTab} onChange={setActiveTab} />
+
+        <div className='min-h-[420px]'>
+          {activeTab === 'overview' && (
+            <div className='rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'>
+              <h3 className='text-base font-semibold text-gray-900'>Overview</h3>
+              <p className='mt-2 text-sm text-gray-600'>
+                This organization workspace is dedicated to sharing media, courses, and folders in one place.
+              </p>
             </div>
-
-            {!expanded ? (
-              <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-100 to-transparent' />
-            ) : null}
-
-            <button
-              type='button'
-              onClick={() => setExpanded((prev) => !prev)}
-              className='absolute bottom-3 right-4 bg-gray-100 px-1 text-sm font-medium text-blue-700 hover:text-blue-800'
-            >
-              {expanded ? 'Show less' : 'Show more'}
-            </button>
-          </div>
-
-          <div className='border border-dashed border-gray-300 rounded-lg p-8 text-gray-400 text-sm text-center'>
-            Activities will appear here
-          </div>
-        </div>
-
-        {/* sidebar */}
-        <div className='w-64 relative'>
-          {loadingMembers ? (
-            <SectionLoading loading={loadingMembers} text='Loading members...' />
-          ) : (
-            <MemberList members={members} />
           )}
-          <OverlayLoading loading={updateOrganization.isPending} text='Updating...' />
+
+          {activeTab === 'members' &&
+            (loadingMembers ? (
+              <div className='space-y-2'>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className='h-14 animate-pulse rounded-xl bg-white' />
+                ))}
+              </div>
+            ) : (
+              <MembersTable members={members} canManage={canManage} />
+            ))}
+
+          {activeTab === 'resources' && <ResourcesTab orgId={org.orgId} canManage={canManage} onToast={showToast} />}
+
+          {activeTab === 'activity' &&
+            (loadingActivities ? (
+              <div className='space-y-2'>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className='h-12 animate-pulse rounded-xl bg-white' />
+                ))}
+              </div>
+            ) : (
+              <ActivityTimeline activities={activities} />
+            ))}
         </div>
       </div>
 
-      {org && <InviteDialog open={inviteOpen} onClose={() => setInviteOpen(false)} orgId={org.orgId} />}
-      {org && (
-        <OrganizationThumbnailPickerDialog
-          open={thumbnailPickerOpen}
-          selectedMediaId={org.logoMediaId ?? undefined}
-          onClose={() => setThumbnailPickerOpen(false)}
-          onSelect={(mediaId) => {
-            updateOrganization.mutate({ logoMediaId: mediaId })
-            setThumbnailPickerOpen(false)
-          }}
-        />
+      <InviteDialog open={inviteOpen} onClose={() => setInviteOpen(false)} orgId={org.orgId} />
+
+      {toast && (
+        <div
+          className={`fixed bottom-5 right-5 z-50 rounded-xl px-4 py-2 text-sm text-white shadow-lg ${
+            toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'
+          }`}
+        >
+          {toast.message}
+        </div>
       )}
     </div>
   )
