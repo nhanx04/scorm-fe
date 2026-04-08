@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(data.user))
       setUser(data.user)
 
-      navigate('/my-course')
+      navigate('/dashboard')
     },
     [navigate]
   )

@@ -33,7 +33,7 @@ export const useGoogleSignIn = (): UseGoogleSignInReturn => {
       // Lưu user info vào localStorage (nếu cần thiết cho UI hiển thị ngay)
       localStorage.setItem('user', JSON.stringify(responseData.user))
 
-      navigate('/home') // Hoặc điều hướng về trang dashboard
+      navigate('/dashboard') // Hoặc điều hướng về trang dashboard
     } catch (err: any) {
       console.error('Google Login Error:', err)
       // Lấy message lỗi chi tiết từ backend
