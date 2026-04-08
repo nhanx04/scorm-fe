@@ -9,9 +9,10 @@ import {
   FiFolderPlus,
   FiTag,
   FiArrowUp,
-  FiArrowDown
+  FiArrowDown,
+  FiUpload
 } from 'react-icons/fi'
-import { CourseCard } from '@/components'
+import { CourseCard, PageLoading } from '@/components'
 import CreateCourseWithAIModal from './components/CreateCourseWithAIModal'
 import DeleteCourseConfirmDialog from './components/DeleteCourseConfirmDialog'
 import MainLayout from '@/layouts/main-layout'
@@ -49,6 +50,7 @@ const MyCourseContent: React.FC = () => {
   
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
+  const importScormInputRef = useRef<HTMLInputElement | null>(null)
 
   // Đóng dropdown tạo mới khoá học khi click ra ngoài
   useEffect(() => {
@@ -120,6 +122,29 @@ const MyCourseContent: React.FC = () => {
       console.error('Failed to create course', error)
     } finally {
       setIsCreatingCourse(false)
+    }
+  }
+
+  const handleImportScormPackage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setNewCourseOpen(false)
+    setToastMessage({ type: 'loading', text: 'Đang import SCORM package, vui lòng chờ...' })
+
+    try {
+      // Lưu ý: Đảm bảo courseApi.importScormPackage đã được định nghĩa trong services/api.ts
+      const response = await courseApi.importScormPackage(file)
+      const courseId = response.data?.courseId
+      if (!courseId) throw new Error('Missing imported course id')
+
+      setToastMessage({ type: 'success', text: 'Import SCORM thành công. Đang chuyển đến editor...' })
+      navigate(`/my-course/editor/${courseId}`)
+    } catch (error) {
+      console.error('Failed to import SCORM package', error)
+      setToastMessage({ type: 'error', text: 'Import SCORM thất bại. Vui lòng kiểm tra file zip hợp lệ.' })
+    } finally {
+      event.target.value = ''
     }
   }
 
@@ -288,6 +313,25 @@ const MyCourseContent: React.FC = () => {
                   <FiLayers className='h-4 w-4' />
                   Create course with AI
                 </button>
+                <button
+                  className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-3 text-sm text-gray-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                  onClick={() => importScormInputRef.current?.click()}
+                  type='button'
+                  disabled={toastMessage?.type === 'loading'}
+                >
+                  <FiUpload className='h-4 w-4' />
+                  Import SCORM package
+                </button>
+                
+                <input
+                  ref={importScormInputRef}
+                  type='file'
+                  accept='.zip,application/zip'
+                  className='hidden'
+                  onChange={(e) => {
+                    void handleImportScormPackage(e)
+                  }}
+                />
               </div>
             </div>
           )}
@@ -382,7 +426,7 @@ const MyCourseContent: React.FC = () => {
 
         {/* Lưới hiển thị danh sách */}
         {isLoadingCourses ? (
-          <div className='text-gray-500 flex justify-center py-10'>Loading courses...</div>
+          <PageLoading loading={isLoadingCourses} text='Loading courses...' minHeightClassName='min-h-[60vh]' />
         ) : filteredCourses.length === 0 ? (
           <div className='text-gray-400 flex flex-col items-center py-16 bg-gray-50 rounded-xl border border-dashed border-gray-300'>
             <FiLayers className='w-12 h-12 mb-3 text-gray-300' />
@@ -425,8 +469,8 @@ const MyCourseContent: React.FC = () => {
             toastMessage.type === 'success'
               ? 'border-emerald-200 bg-emerald-50/95 text-emerald-800'
               : toastMessage.type === 'error'
-              ? 'border-red-200 bg-red-50/95 text-red-800'
-              : 'border-blue-200 bg-blue-50/95 text-blue-800'
+                ? 'border-red-200 bg-red-50/95 text-red-800'
+                : 'border-blue-200 bg-blue-50/95 text-blue-800'
           }`}
         >
           {toastMessage.type === 'loading' && (
@@ -436,14 +480,7 @@ const MyCourseContent: React.FC = () => {
               fill='none'
               viewBox='0 0 24 24'
             >
-              <circle
-                className='opacity-25'
-                cx='12'
-                cy='12'
-                r='10'
-                stroke='currentColor'
-                strokeWidth='4'
-              ></circle>
+              <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
               <path
                 className='opacity-75'
                 fill='currentColor'

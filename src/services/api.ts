@@ -113,6 +113,9 @@ export type CourseResponse = {
   title: string
   description?: string | null
   coverImageUrl?: string | null
+  passingScore?: number | null
+  attemptLimit?: number | null
+  durationMin?: number | null
   status?: string | null
   tags?: string[] // Bổ sung trường tags cho response khóa học trả về
   isFavorite?: boolean // Bổ sung trạng thái yêu thích
@@ -134,7 +137,16 @@ export const courseApi = {
     api.patch<CourseResponse>(`/courses/${courseId}`, payload),
   listCourses: () => api.get<CourseResponse[]>('/courses'),
   getCourseById: (courseId: number | string) => api.get<CourseResponse>(`/courses/${courseId}`),
-  deleteCourse: (courseId: number | string) => api.delete(`/courses/${courseId}`)
+  deleteCourse: (courseId: number | string) => api.delete(`/courses/${courseId}`),
+  importScormPackage: (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post<CourseResponse>('/courses/import-scorm', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  }
 }
 
 export const scormApi = {

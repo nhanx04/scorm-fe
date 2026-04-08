@@ -22,6 +22,7 @@ import type {
 
 type EditorActions = {
   hydrateStore: (state: EditorState) => void
+  resetStore: () => void
   updateCourse: (data: Partial<EditorState['course']>) => void
   updateThemeGlobal: (data: Partial<EditorState['theme']['global']>) => void
   setMode: (mode: EditorState['mode']) => void
@@ -106,47 +107,50 @@ const createQuestionByType = (type: QuestionType, orderIndex: number): Question 
   } as MatchingQuestion
 }
 
-const initialSectionId = createId()
-const initialPageId = createId()
-const initialBlockId = createId()
+const createInitialState = (): EditorState => {
+  const initialSectionId = createId()
+  const initialPageId = createId()
+  const initialBlockId = createId()
 
-const initialState: EditorState = {
-  course: { id: createId(), title: 'Untitled Course', description: 'Start building your SCORM course here.' },
-  theme: {
-    global: {
-      primaryColor: '#2563eb',
-      background: '#ffffff',
-      textColor: '#111827',
-      borderRadius: 12,
-      fontFamily: 'Inter, sans-serif'
+  return {
+    course: { id: createId(), title: 'Untitled Course', description: 'Start building your SCORM course here.' },
+    theme: {
+      global: {
+        primaryColor: '#2563eb',
+        background: '#ffffff',
+        textColor: '#111827',
+        borderRadius: 12,
+        fontFamily: 'Inter, sans-serif'
+      },
+      sectionOverrides: {},
+      pageOverrides: {},
+      blockOverrides: {}
     },
-    sectionOverrides: {},
-    pageOverrides: {},
-    blockOverrides: {}
-  },
-  mode: 'edit',
-  sectionOrder: [initialSectionId],
-  sections: { [initialSectionId]: { id: initialSectionId, title: 'Section 1', description: 'Introduction section' } },
-  pageOrder: { [initialSectionId]: [initialPageId] },
-  pages: { [initialPageId]: { id: initialPageId, title: 'Page 1', type: 'content', layoutType: 'SINGLE_COLUMN' } },
-  blockOrder: { [initialPageId]: [initialBlockId] },
-  blocks: {
-    [initialBlockId]: {
-      id: initialBlockId,
-      type: 'TEXT',
-      orderIndex: 1,
-      textHtml: '<p>Start building your content...</p>'
-    }
-  },
-  questionOrder: { [initialPageId]: [] },
-  questions: {},
-  activePageId: initialPageId
+    mode: 'edit',
+    sectionOrder: [initialSectionId],
+    sections: { [initialSectionId]: { id: initialSectionId, title: 'Section 1', description: 'Introduction section' } },
+    pageOrder: { [initialSectionId]: [initialPageId] },
+    pages: { [initialPageId]: { id: initialPageId, title: 'Page 1', type: 'content', layoutType: 'SINGLE_COLUMN' } },
+    blockOrder: { [initialPageId]: [initialBlockId] },
+    blocks: {
+      [initialBlockId]: {
+        id: initialBlockId,
+        type: 'TEXT',
+        orderIndex: 1,
+        textHtml: '<p>Start building your content...</p>'
+      }
+    },
+    questionOrder: { [initialPageId]: [] },
+    questions: {},
+    activePageId: initialPageId
+  }
 }
 
 export const useCourseEditorStore = create<EditorStore>()(
   immer((set) => ({
-    ...initialState,
+    ...createInitialState(),
     hydrateStore: (state) => set(() => state),
+    resetStore: () => set(() => createInitialState()),
     updateCourse: (data) => set((s) => void Object.assign(s.course, data)),
     updateThemeGlobal: (data) => set((s) => void Object.assign(s.theme.global, data)),
     setMode: (mode) => set((s) => void (s.mode = mode)),
