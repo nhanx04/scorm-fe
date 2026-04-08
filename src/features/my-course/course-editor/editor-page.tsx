@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
+import { PageLoading } from '@/components'
 import EditorLayout from './components/editor/EditorLayout'
 import Sidebar from './components/editor/Sidebar'
 import MainEditor from './components/editor/MainEditor'
@@ -13,45 +14,65 @@ export const EditorPage: React.FC = () => {
   const navigate = useNavigate()
   const { courseId } = useParams<{ courseId: string }>()
   const hydrateStore = useCourseEditorStore((state) => state.hydrateStore)
+  const resetStore = useCourseEditorStore((state) => state.resetStore)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hydratingRef = useRef(true)
+  const [isPageLoading, setIsPageLoading] = useState(true)
 
   const hasToken =
     typeof window !== 'undefined' &&
     !!(localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('auth_token'))
 
   useEffect(() => {
+    let mounted = true
+
     if (!hasToken) {
       hydratingRef.current = false
+      setIsPageLoading(false)
       navigate('/')
-      return
+      return () => {
+        mounted = false
+      }
     }
 
     if (!courseId) {
       hydratingRef.current = false
+      setIsPageLoading(false)
       navigate('/my-course')
-      return
+      return () => {
+        mounted = false
+      }
     }
 
-    let mounted = true
-
+    const isNewCourse = courseId === 'new'
+    hydratingRef.current = true
+    setIsPageLoading(true)
     ;(async () => {
       try {
+        if (isNewCourse) {
+          resetStore()
+          return
+        }
+
         const draft = await loadDraft(courseId)
         if (!mounted || !draft) return
         const hydrated = hydrateFromPayload(draft)
         hydrateStore(hydrated)
       } catch {
-        // no-op: create new course if no draft found
+        // if no draft found or fetch failed, fallback to a blank editor for safety
+        if (mounted) resetStore()
       } finally {
-        hydratingRef.current = false
+        if (mounted) {
+          hydratingRef.current = false
+          setIsPageLoading(false)
+        }
       }
     })()
 
     return () => {
       mounted = false
     }
-  }, [courseId, hasToken, hydrateStore, navigate])
+  }, [courseId, hasToken, hydrateStore, navigate, resetStore])
 
   useEffect(() => {
     if (!hasToken) return
@@ -70,6 +91,14 @@ export const EditorPage: React.FC = () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
   }, [hasToken])
+
+  if (isPageLoading) {
+    return (
+      <MainLayout>
+        <PageLoading loading={isPageLoading} text='Loading course...' />
+      </MainLayout>
+    )
+  }
 
   return (
     <MainLayout>

@@ -11,12 +11,15 @@ import {
   SectionHeader,
   TimelineItemRow
 } from './components'
+import { PageLoading } from '@/components'
 
 type CourseFilter = 'All' | 'Lessons' | 'Exams' | 'Chapters'
 
 const DashboardContent: React.FC = () => {
   const [filter, setFilter] = useState<CourseFilter>('All')
   const [search, setSearch] = useState('')
+
+  const isPageLoading = false
 
   const filteredCourses = useMemo(() => {
     return recentCourses.filter((course) => {
@@ -25,6 +28,10 @@ const DashboardContent: React.FC = () => {
       return filterMatch && searchMatch
     })
   }, [filter, search])
+
+  if (isPageLoading) {
+    return <PageLoading loading={isPageLoading} text='Loading dashboard...' minHeightClassName='min-h-[60vh]' />
+  }
 
   return (
     <div className='px-4 md:px-8 lg:px-20 min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900'>

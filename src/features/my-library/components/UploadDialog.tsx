@@ -20,16 +20,22 @@ const mediaOptions = [
 const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId }) => {
   const [step, setStep] = useState<'SELECT' | 'DETAIL'>('SELECT')
   const [payload, setPayload] = useState<UploadPayload | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submitLockRef = useRef(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
 
   const { mutate, isLoading } = useUploadMedia()
+  const busy = isLoading || isSubmitting
 
   const reset = () => {
     setStep('SELECT')
     setPayload(null)
+    setIsSubmitting(false)
+    submitLockRef.current = false
   }
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    if (busy) return
     const file = e.target.files?.[0]
     if (!file) return
     const type = documentTypeFromFile(file)
@@ -39,7 +45,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
   }
 
   const handleSubmit = () => {
-    if (!payload) return
+    if (busy || submitLockRef.current || !payload) return
     if (payload.type === 'VIDEO') {
       if (!payload.youtubeUrl.trim()) {
         alert('Please enter YouTube embed URL')
@@ -51,10 +57,16 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
       }
     }
 
+    submitLockRef.current = true
+    setIsSubmitting(true)
     mutate(payload, {
       onSuccess: () => {
         reset()
         onClose()
+      },
+      onError: () => {
+        submitLockRef.current = false
+        setIsSubmitting(false)
       }
     })
   }
@@ -64,7 +76,12 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
   return (
     <div className='fixed inset-0 bg-black/40 flex items-center justify-center z-50'>
       <div className='bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative'>
-        <button className='absolute top-3 right-3 text-gray-500' onClick={onClose} type='button'>
+        <button
+          className='absolute top-3 right-3 text-gray-500 disabled:cursor-not-allowed disabled:opacity-60'
+          onClick={onClose}
+          type='button'
+          disabled={busy}
+        >
           <FiX />
         </button>
 
@@ -75,8 +92,9 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
               {mediaOptions.map((opt) => (
                 <button
                   key={opt.type}
-                  className='border border-gray-200 rounded-lg p-4 flex flex-col items-center hover:shadow'
+                  className='border border-gray-200 rounded-lg p-4 flex flex-col items-center hover:shadow disabled:cursor-not-allowed disabled:opacity-60'
                   onClick={() => {
+                    if (busy) return
                     if (opt.type === 'VIDEO') {
                       setPayload({
                         type: 'VIDEO',
@@ -91,6 +109,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
                     }
                   }}
                   type='button'
+                  disabled={busy}
                 >
                   <div className='text-3xl mb-2'>{opt.icon}</div>
                   <p>{opt.label}</p>
@@ -127,7 +146,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
                   <input
                     type='text'
                     placeholder='YouTube embed URL'
-                    className='flex-1 border border-gray-300 px-3 py-2 rounded'
+                    className='flex-1 border border-gray-300 px-3 py-2 rounded disabled:bg-gray-100'
                     value={payload.youtubeUrl}
                     onChange={(e) =>
                       setPayload({
@@ -135,6 +154,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
                         youtubeUrl: e.target.value
                       } as UploadPayload)
                     }
+                    disabled={busy}
                   />
                 </div>
               )}
@@ -142,7 +162,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
               {/* title */}
               <input
                 type='text'
-                className='w-full border border-gray-300 px-3 py-2 rounded'
+                className='w-full border border-gray-300 px-3 py-2 rounded disabled:bg-gray-100'
                 value={payload.title ?? ''}
                 onChange={(e) =>
                   setPayload({
@@ -151,15 +171,16 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onClose, libraryId })
                   } as UploadPayload)
                 }
                 placeholder='Name of media'
+                disabled={busy}
               />
 
               <button
                 onClick={handleSubmit}
-                disabled={isLoading}
-                className='w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium disabled:opacity-50'
+                disabled={busy}
+                className='w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium disabled:cursor-not-allowed disabled:opacity-50'
                 type='button'
               >
-                <FiUploadCloud /> Submit
+                <FiUploadCloud /> {busy ? 'Uploading...' : 'Submit'}
               </button>
             </div>
           </>

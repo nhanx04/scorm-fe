@@ -37,6 +37,9 @@ const ExportActions: React.FC<Props> = ({ courseId }) => {
         title: state.course.title,
         description: state.course.description,
         coverImageUrl: state.course.coverImageUrl,
+        passingScore: state.course.passingScore,
+        attemptLimit: state.course.attemptLimit,
+        durationMin: state.course.durationMin,
         editorStateSnapshot: payload.editorStateSnapshot,
         interfaceSnapshot: state.theme
       })
@@ -71,6 +74,9 @@ const ExportActions: React.FC<Props> = ({ courseId }) => {
           title: state.course.title,
           description: state.course.description,
           coverImageUrl: state.course.coverImageUrl,
+          passingScore: state.course.passingScore,
+          attemptLimit: state.course.attemptLimit,
+          durationMin: state.course.durationMin,
           editorStateSnapshot: payload.editorStateSnapshot,
           interfaceSnapshot: state.theme
         }))

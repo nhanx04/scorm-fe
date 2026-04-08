@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { FiSearch, FiChevronDown, FiFileText, FiLayers, FiX } from 'react-icons/fi'
-import { CourseCard } from '@/components'
+import { FiSearch, FiChevronDown, FiFileText, FiLayers, FiUpload, FiX } from 'react-icons/fi'
+import { CourseCard, PageLoading } from '@/components'
 import CourseFilter from './components/CourseFilter'
 import CreateCourseWithAIModal from './components/CreateCourseWithAIModal'
 import DeleteCourseConfirmDialog from './components/DeleteCourseConfirmDialog'
@@ -25,13 +25,14 @@ const MyCourseContent: React.FC = () => {
   const [isCreatingCourse, setIsCreatingCourse] = useState<boolean>(false)
   const [deletingCourseIds, setDeletingCourseIds] = useState<Set<number>>(new Set())
   const [aiModalOpen, setAiModalOpen] = useState<boolean>(false)
-  
+
   // MERGED: Giữ lại cả toastMessage (UX AI Modal) và coursePendingDelete (Tính năng xoá khoá học)
   const [toastMessage, setToastMessage] = useState<ToastMessage | null>(null)
   const [coursePendingDelete, setCoursePendingDelete] = useState<CourseResponse | null>(null)
-  
+
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
+  const importScormInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!newCourseOpen) return
@@ -85,23 +86,11 @@ const MyCourseContent: React.FC = () => {
     }
   }, [])
 
-  const handleCreateFromScratch = async () => {
+  const handleCreateFromScratch = () => {
     if (isCreatingCourse) return
 
-    try {
-      setIsCreatingCourse(true)
-      setNewCourseOpen(false)
-      const response = await courseApi.createCourse({
-        title: 'Untitled Course'
-      })
-      const courseId = response.data?.courseId
-      if (!courseId) return
-      navigate(`/my-course/editor/${courseId}`)
-    } catch (error) {
-      console.error('Failed to create course', error)
-    } finally {
-      setIsCreatingCourse(false)
-    }
+    setNewCourseOpen(false)
+    navigate('/my-course/editor/new')
   }
 
   const handleOpenCourse = (courseId: number) => {
@@ -127,6 +116,28 @@ const MyCourseContent: React.FC = () => {
         next.delete(courseId)
         return next
       })
+    }
+  }
+
+  const handleImportScormPackage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setNewCourseOpen(false)
+    setToastMessage({ type: 'loading', text: 'Đang import SCORM package, vui lòng chờ...' })
+
+    try {
+      const response = await courseApi.importScormPackage(file)
+      const courseId = response.data?.courseId
+      if (!courseId) throw new Error('Missing imported course id')
+
+      setToastMessage({ type: 'success', text: 'Import SCORM thành công. Đang chuyển đến editor...' })
+      navigate(`/my-course/editor/${courseId}`)
+    } catch (error) {
+      console.error('Failed to import SCORM package', error)
+      setToastMessage({ type: 'error', text: 'Import SCORM thất bại. Vui lòng kiểm tra file zip hợp lệ.' })
+    } finally {
+      event.target.value = ''
     }
   }
 
@@ -165,9 +176,7 @@ const MyCourseContent: React.FC = () => {
                 <div className='p-1'>
                   <button
                     className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed'
-                    onClick={() => {
-                      void handleCreateFromScratch()
-                    }}
+                    onClick={handleCreateFromScratch}
                     type='button'
                     disabled={isCreatingCourse || toastMessage?.type === 'loading'}
                   >
@@ -187,6 +196,26 @@ const MyCourseContent: React.FC = () => {
                     <FiLayers className='h-4 w-4' />
                     Create course with AI
                   </button>
+
+                  <button
+                    className='group flex w-full cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-green-50 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed'
+                    onClick={() => importScormInputRef.current?.click()}
+                    type='button'
+                    disabled={toastMessage?.type === 'loading'}
+                  >
+                    <FiUpload className='h-4 w-4' />
+                    Import SCORM package
+                  </button>
+
+                  <input
+                    ref={importScormInputRef}
+                    type='file'
+                    accept='.zip,application/zip'
+                    className='hidden'
+                    onChange={(e) => {
+                      void handleImportScormPackage(e)
+                    }}
+                  />
                 </div>
               </div>
             )}
@@ -200,7 +229,7 @@ const MyCourseContent: React.FC = () => {
 
         {/* Course grid */}
         {isLoadingCourses ? (
-          <div className='text-gray-500'>Loading courses...</div>
+          <PageLoading loading={isLoadingCourses} text='Loading courses...' minHeightClassName='min-h-[60vh]' />
         ) : (
           <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5'>
             {courses.map((course) => (
@@ -228,8 +257,8 @@ const MyCourseContent: React.FC = () => {
             toastMessage.type === 'success'
               ? 'border-emerald-200 bg-emerald-50/95 text-emerald-800'
               : toastMessage.type === 'error'
-              ? 'border-red-200 bg-red-50/95 text-red-800'
-              : 'border-blue-200 bg-blue-50/95 text-blue-800'
+                ? 'border-red-200 bg-red-50/95 text-red-800'
+                : 'border-blue-200 bg-blue-50/95 text-blue-800'
           }`}
         >
           {toastMessage.type === 'loading' && (
@@ -239,14 +268,7 @@ const MyCourseContent: React.FC = () => {
               fill='none'
               viewBox='0 0 24 24'
             >
-              <circle
-                className='opacity-25'
-                cx='12'
-                cy='12'
-                r='10'
-                stroke='currentColor'
-                strokeWidth='4'
-              ></circle>
+              <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
               <path
                 className='opacity-75'
                 fill='currentColor'

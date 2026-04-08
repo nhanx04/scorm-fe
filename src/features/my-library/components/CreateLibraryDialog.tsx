@@ -14,7 +14,7 @@ const CreateLibraryDialog: React.FC<CreateLibraryDialogProps> = ({ open, onClose
   const { mutate, isLoading } = useCreateLibrary()
 
   const handleSubmit = () => {
-    if (!name.trim()) return
+    if (isLoading || !name.trim()) return
     mutate(
       { libraryName: name.trim(), description: description.trim() },
       {
@@ -32,7 +32,12 @@ const CreateLibraryDialog: React.FC<CreateLibraryDialogProps> = ({ open, onClose
   return (
     <div className='fixed inset-0 bg-black/40 flex items-center justify-center z-50'>
       <div className='bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative'>
-        <button className='absolute top-3 right-3 text-gray-500' onClick={onClose} type='button'>
+        <button
+          className='absolute top-3 right-3 text-gray-500 disabled:cursor-not-allowed disabled:opacity-60'
+          onClick={onClose}
+          type='button'
+          disabled={isLoading}
+        >
           <FiX />
         </button>
         <h3 className='text-lg font-semibold text-blue-900 mb-4'>Create new library</h3>
@@ -54,10 +59,10 @@ const CreateLibraryDialog: React.FC<CreateLibraryDialogProps> = ({ open, onClose
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className='w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium disabled:opacity-50'
+            className='w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium disabled:cursor-not-allowed disabled:opacity-50'
             type='button'
           >
-            Create
+            {isLoading ? 'Creating...' : 'Create'}
           </button>
         </div>
       </div>
@@ -66,4 +71,3 @@ const CreateLibraryDialog: React.FC<CreateLibraryDialogProps> = ({ open, onClose
 }
 
 export default CreateLibraryDialog
-

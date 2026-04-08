@@ -8,8 +8,17 @@ export const saveDraft = async (editorState: EditorState) => {
 
 export const loadDraft = async (courseId: string) => {
   const { data } = await courseApi.getCourseById(courseId)
+  const rawSnapshot = (data.editorState ?? data.editorStateSnapshot ?? {}) as Record<string, unknown>
   return {
-    editorStateSnapshot: data.editorState ?? data.editorStateSnapshot,
+    editorStateSnapshot: {
+      ...rawSnapshot,
+      title: (rawSnapshot.title as string | undefined) ?? data.title,
+      description: (rawSnapshot.description as string | undefined) ?? data.description ?? '',
+      coverImageUrl: (rawSnapshot.coverImageUrl as string | undefined) ?? data.coverImageUrl ?? '',
+      passingScore: (rawSnapshot.passingScore as number | undefined) ?? data.passingScore ?? 80,
+      attemptLimit: (rawSnapshot.attemptLimit as number | undefined) ?? data.attemptLimit ?? 0,
+      durationMin: (rawSnapshot.durationMin as number | undefined) ?? data.durationMin ?? 0
+    },
     interfaceSnapshot: data.themeOverride
   }
 }
@@ -27,6 +36,9 @@ type EnsureCoursePayload = {
   title: string
   description?: string
   coverImageUrl?: string
+  passingScore?: number
+  attemptLimit?: number
+  durationMin?: number
   editorStateSnapshot: unknown
   interfaceSnapshot?: unknown
 }
@@ -36,6 +48,9 @@ export const saveCourseOnly = async ({
   title,
   description,
   coverImageUrl,
+  passingScore,
+  attemptLimit,
+  durationMin,
   editorStateSnapshot,
   interfaceSnapshot
 }: EnsureCoursePayload) => {
@@ -43,6 +58,10 @@ export const saveCourseOnly = async ({
     title,
     description,
     coverImageUrl,
+    passingScore,
+    attemptLimit,
+    durationMin,
+    status: 'Draft',
     editorState: editorStateSnapshot,
     themeOverride: interfaceSnapshot,
     editorVersion: 'editor-state-v2',
@@ -79,6 +98,9 @@ export const ensureExportableCourseId = async ({
   title,
   description,
   coverImageUrl,
+  passingScore,
+  attemptLimit,
+  durationMin,
   editorStateSnapshot,
   interfaceSnapshot
 }: EnsureCoursePayload) => {
@@ -88,6 +110,10 @@ export const ensureExportableCourseId = async ({
     title,
     description,
     coverImageUrl,
+    passingScore,
+    attemptLimit,
+    durationMin,
+    status: 'Draft',
     editorState: editorStateSnapshot,
     themeOverride: interfaceSnapshot,
     editorVersion: 'editor-state-v2',
