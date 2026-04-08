@@ -19,7 +19,7 @@ interface LibraryToolbarProps {
 }
 
 const ghostBtn =
-  'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 transition-all duration-150 hover:bg-gray-100'
+  'inline-flex items-center gap-2 rounded-full border border-gray-300 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100'
 
 const LibraryToolbar: React.FC<LibraryToolbarProps> = ({
   onRefresh,
@@ -34,7 +34,7 @@ const LibraryToolbar: React.FC<LibraryToolbarProps> = ({
   onForward
 }) => {
   return (
-    <div className='mb-4 flex items-center justify-between'>
+    <div className='mb-6 flex items-center justify-between'>
       <div className='flex items-center gap-2'>
         <button type='button' className={ghostBtn} onClick={onRefresh}>
           <FiRefreshCw className='h-4 w-4' />

@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { 
-  FiSearch, 
-  FiChevronDown, 
-  FiFileText, 
-  FiLayers, 
-  FiX, 
-  FiPlusCircle, 
+import {
+  FiSearch,
+  FiChevronDown,
+  FiFileText,
+  FiLayers,
+  FiX,
+  FiPlusCircle,
   FiFolderPlus,
   FiTag,
   FiArrowUp,
@@ -36,7 +36,7 @@ const MyCourseContent: React.FC = () => {
   const [isCreatingCourse, setIsCreatingCourse] = useState<boolean>(false)
   const [deletingCourseIds, setDeletingCourseIds] = useState<Set<number>>(new Set())
   const [aiModalOpen, setAiModalOpen] = useState<boolean>(false)
-  
+
   const [toastMessage, setToastMessage] = useState<ToastMessage | null>(null)
   const [coursePendingDelete, setCoursePendingDelete] = useState<CourseResponse | null>(null)
 
@@ -47,7 +47,7 @@ const MyCourseContent: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('All')
   const [statusFilterOpen, setStatusFilterOpen] = useState<boolean>(false)
   const statusFilterRef = useRef<HTMLDivElement>(null)
-  
+
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
   const importScormInputRef = useRef<HTMLInputElement | null>(null)
@@ -107,22 +107,10 @@ const MyCourseContent: React.FC = () => {
     }
   }, [])
 
-  const handleCreateFromScratch = async () => {
+  const handleCreateFromScratch = () => {
     if (isCreatingCourse) return
-    try {
-      setIsCreatingCourse(true)
-      setNewCourseOpen(false)
-      const response = await courseApi.createCourse({
-        title: 'Untitled Course'
-      })
-      const courseId = response.data?.courseId
-      if (!courseId) return
-      navigate(`/my-course/editor/${courseId}`)
-    } catch (error) {
-      console.error('Failed to create course', error)
-    } finally {
-      setIsCreatingCourse(false)
-    }
+    setNewCourseOpen(false)
+    navigate('/my-course/editor/new')
   }
 
   const handleImportScormPackage = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,19 +163,15 @@ const MyCourseContent: React.FC = () => {
   }
 
   const handleUpdateCourseStatus = (courseId: number, newStatus: string) => {
-    setCourses((prev) => 
-      prev.map(course => 
-        course.courseId === courseId 
-          ? { ...course, status: newStatus } 
-          : course
-      )
+    setCourses((prev) =>
+      prev.map((course) => (course.courseId === courseId ? { ...course, status: newStatus } : course))
     )
     // TODO: Bổ sung logic gọi API như `courseApi.updateCourse(courseId, { status: newStatus })`
   }
 
   // Xử lý thêm Tag cho khóa học
   const handleAddTag = async (courseId: number, newTag: string) => {
-    const courseIndex = courses.findIndex(c => c.courseId === courseId)
+    const courseIndex = courses.findIndex((c) => c.courseId === courseId)
     if (courseIndex === -1) return
 
     const courseToUpdate = courses[courseIndex]
@@ -195,12 +179,8 @@ const MyCourseContent: React.FC = () => {
     const updatedTags = [...currentTags, newTag]
 
     // Cập nhật local state trước để UI phản hồi mượt mà (Optimistic Update)
-    setCourses((prev) => 
-      prev.map(course => 
-        course.courseId === courseId 
-          ? { ...course, tags: updatedTags } 
-          : course
-      )
+    setCourses((prev) =>
+      prev.map((course) => (course.courseId === courseId ? { ...course, tags: updatedTags } : course))
     )
 
     try {
@@ -210,31 +190,23 @@ const MyCourseContent: React.FC = () => {
       console.error('Failed to add tag', error)
       setToastMessage({ type: 'error', text: 'Thêm tag thất bại' })
       // Rollback lại state nếu API lỗi
-      setCourses((prev) => 
-        prev.map(course => 
-          course.courseId === courseId 
-            ? { ...course, tags: currentTags } 
-            : course
-        )
+      setCourses((prev) =>
+        prev.map((course) => (course.courseId === courseId ? { ...course, tags: currentTags } : course))
       )
     }
   }
 
   // Xử lý bật/tắt đánh dấu khóa học yêu thích
   const handleFavoriteToggle = async (courseId: number, newFavoriteStatus: boolean) => {
-    const courseIndex = courses.findIndex(c => c.courseId === courseId)
+    const courseIndex = courses.findIndex((c) => c.courseId === courseId)
     if (courseIndex === -1) return
 
     const courseToUpdate = courses[courseIndex]
     const previousStatus = courseToUpdate.isFavorite || false
 
     // Optimistic Update: Cập nhật UI ngay lập tức
-    setCourses((prev) => 
-      prev.map(course => 
-        course.courseId === courseId 
-          ? { ...course, isFavorite: newFavoriteStatus } 
-          : course
-      )
+    setCourses((prev) =>
+      prev.map((course) => (course.courseId === courseId ? { ...course, isFavorite: newFavoriteStatus } : course))
     )
 
     try {
@@ -244,12 +216,8 @@ const MyCourseContent: React.FC = () => {
       console.error('Failed to update favorite status', error)
       setToastMessage({ type: 'error', text: 'Cập nhật trạng thái yêu thích thất bại' })
       // Rollback lại state cũ nếu API lỗi
-      setCourses((prev) => 
-        prev.map(course => 
-          course.courseId === courseId 
-            ? { ...course, isFavorite: previousStatus } 
-            : course
-        )
+      setCourses((prev) =>
+        prev.map((course) => (course.courseId === courseId ? { ...course, isFavorite: previousStatus } : course))
       )
     }
   }
@@ -262,7 +230,7 @@ const MyCourseContent: React.FC = () => {
 
     // Lọc theo từ khoá (tìm trong title và description)
     const searchLower = searchQuery.toLowerCase()
-    const matchesSearch = 
+    const matchesSearch =
       course.title.toLowerCase().includes(searchLower) ||
       (course.description?.toLowerCase().includes(searchLower) ?? false)
 
@@ -271,7 +239,6 @@ const MyCourseContent: React.FC = () => {
 
   return (
     <div className='flex flex-1 h-full bg-white overflow-hidden'>
-      
       {/* 1. SIDEBAR TRÁI */}
       <div className='w-[310px] bg-[#F7F9FA] border-r border-gray-200 shrink-0 flex flex-col p-6 overflow-y-auto'>
         <div className='relative mb-10 w-full mt-4'>
@@ -322,7 +289,7 @@ const MyCourseContent: React.FC = () => {
                   <FiUpload className='h-4 w-4' />
                   Import SCORM package
                 </button>
-                
+
                 <input
                   ref={importScormInputRef}
                   type='file'
@@ -346,9 +313,7 @@ const MyCourseContent: React.FC = () => {
             </button>
           </div>
           <div>
-            <button className='text-gray-600 hover:text-gray-900 text-base font-normal'>
-              Deleted courses
-            </button>
+            <button className='text-gray-600 hover:text-gray-900 text-base font-normal'>Deleted courses</button>
           </div>
         </div>
       </div>
@@ -371,16 +336,15 @@ const MyCourseContent: React.FC = () => {
 
         <div className='flex items-center justify-between mb-6'>
           <h2 className='text-xl font-normal text-gray-500'>Recent</h2>
-          
+
           <div className='flex items-center gap-4'>
-            
             {/* Bộ lọc trạng thái (Status Filter) */}
             <div className='relative' ref={statusFilterRef}>
-              <button 
+              <button
                 onClick={() => setStatusFilterOpen((v) => !v)}
                 className={`flex items-center gap-2 border rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-                  selectedStatus !== 'All' 
-                    ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                  selectedStatus !== 'All'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-400 text-gray-800 hover:bg-gray-50'
                 }`}
               >
@@ -390,7 +354,7 @@ const MyCourseContent: React.FC = () => {
               </button>
 
               {statusFilterOpen && (
-                <div className="absolute top-full right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20">
+                <div className='absolute top-full right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20'>
                   {STATUS_FILTERS.map((s) => (
                     <button
                       key={s}
@@ -408,7 +372,7 @@ const MyCourseContent: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <button className='flex items-center gap-2 border border-gray-400 rounded-full px-5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors'>
               <FiTag className='w-4 h-4' />
               Tags
@@ -416,9 +380,9 @@ const MyCourseContent: React.FC = () => {
             </button>
 
             <button className='flex flex-col items-center justify-center p-1 hover:bg-gray-100 rounded text-gray-700 transition-colors'>
-              <div className="flex -space-x-1">
-                 <FiArrowUp className="w-5 h-5" />
-                 <FiArrowDown className="w-5 h-5" />
+              <div className='flex -space-x-1'>
+                <FiArrowUp className='w-5 h-5' />
+                <FiArrowDown className='w-5 h-5' />
               </div>
             </button>
           </div>
@@ -432,8 +396,8 @@ const MyCourseContent: React.FC = () => {
             <FiLayers className='w-12 h-12 mb-3 text-gray-300' />
             {/* 4. CẬP NHẬT CÂU THÔNG BÁO KHI KHÔNG TÌM THẤY */}
             <p>
-              {searchQuery.trim() !== '' 
-                ? `No courses found matching "${searchQuery}"` 
+              {searchQuery.trim() !== ''
+                ? `No courses found matching "${searchQuery}"`
                 : `No courses found for "${selectedStatus}" status.`}
             </p>
           </div>
@@ -446,9 +410,9 @@ const MyCourseContent: React.FC = () => {
                 description={course.description ?? ''}
                 image={course.coverImageUrl}
                 status={course.status || 'Draft'}
-                tags={course.tags || []} 
+                tags={course.tags || []}
                 isFavorite={course.isFavorite} // Đã loại bỏ as any
-                onFavoriteToggle={(newStatus) => handleFavoriteToggle(course.courseId, newStatus)} 
+                onFavoriteToggle={(newStatus) => handleFavoriteToggle(course.courseId, newStatus)}
                 onAddTag={(newTag) => handleAddTag(course.courseId, newTag)}
                 onStatusChange={(newStatus) => handleUpdateCourseStatus(course.courseId, newStatus)}
                 onClick={() => handleOpenCourse(course.courseId)}

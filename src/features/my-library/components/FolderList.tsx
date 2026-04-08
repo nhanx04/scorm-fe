@@ -1,6 +1,6 @@
 // LIMIT THE FILE CONTENT TO AT MOST 300 LINES. IF MORE CONTENT NEEDS TO BE ADDED USE THE str-replace-editor TOOL TO EDIT THE FILE AFTER IT HAS BEEN CREATED.
 import React, { useMemo, useState } from 'react'
-import { FiFolderPlus, FiPlus } from 'react-icons/fi'
+import { FiPlus } from 'react-icons/fi'
 import type { Library } from '../types/library'
 import FileCard from './FileCard'
 import LibraryToolbar, { type SortValue, type ViewMode } from './LibraryToolbar'
@@ -39,18 +39,15 @@ const FolderList: React.FC<FolderListProps> = ({
 
   return (
     <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-semibold text-gray-900'>Thư viện của tôi</h2>
-        <div className='flex items-center gap-2'>
-          <button
-            className='inline-flex items-center gap-2 rounded-lg bg-blue-900 px-3 py-2 text-sm font-medium text-white transition-all duration-150 hover:brightness-110'
-            onClick={onOpenCreate}
-            type='button'
-          >
-            <FiPlus className='h-4 w-4' />
-            New Folder
-          </button>
-        </div>
+      <div className='flex items-center justify-end'>
+        <button
+          className='inline-flex items-center gap-2 rounded-full bg-blue-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-800'
+          onClick={onOpenCreate}
+          type='button'
+        >
+          <FiPlus className='h-4 w-4' />
+          New Folder
+        </button>
       </div>
 
       <LibraryToolbar

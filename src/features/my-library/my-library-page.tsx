@@ -15,6 +15,7 @@ import ItemList from './components/ItemList'
 import UploadDialog from './components/UploadDialog'
 import CreateLibraryDialog from './components/CreateLibraryDialog'
 import ConfirmDialog from './components/ConfirmDialog'
+import ImagePreviewDialog from './components/ImagePreviewDialog'
 import Toast, { type ToastType } from './components/Toast'
 import type { Library } from './types/library'
 
@@ -36,6 +37,11 @@ const MyLibraryContent: React.FC = () => {
     open: false,
     type: 'success',
     message: ''
+  })
+  const [imagePreview, setImagePreview] = useState<{ open: boolean; imageUrl?: string; imageName?: string }>({
+    open: false,
+    imageUrl: undefined,
+    imageName: undefined
   })
 
   const { data: libraries = [], isLoading: loadingLibs, refetch: refetchLibraries } = useLibraries()
@@ -114,8 +120,10 @@ const MyLibraryContent: React.FC = () => {
   }
 
   return (
-    <div className='px-20 bg-gray-100 min-h-screen'>
-      <div className='bg-white h-full shadow-lg px-6 py-4'>
+    <div className='flex h-full flex-1 overflow-hidden bg-white'>
+      <div className='flex-1 overflow-y-auto bg-white px-16 py-10'>
+        <h1 className='mb-6 text-[32px] font-bold text-gray-900'>My library</h1>
+
         {loadingLibs ? (
           <PageLoading loading={loadingLibs} text='Loading libraries...' minHeightClassName='min-h-[60vh]' />
         ) : selected ? (
@@ -140,6 +148,9 @@ const MyLibraryContent: React.FC = () => {
                   kind: 'bulk-delete-media',
                   payload
                 })
+              }}
+              onPreviewImage={({ imageUrl, imageName }) => {
+                setImagePreview({ open: true, imageUrl, imageName })
               }}
             />
             <OverlayLoading loading={loadingItems} text='Loading items...' />
@@ -188,6 +199,13 @@ const MyLibraryContent: React.FC = () => {
           }
         }}
         onConfirm={handleConfirm}
+      />
+
+      <ImagePreviewDialog
+        open={imagePreview.open}
+        imageUrl={imagePreview.imageUrl}
+        imageName={imagePreview.imageName}
+        onClose={() => setImagePreview({ open: false, imageUrl: undefined, imageName: undefined })}
       />
 
       <Toast

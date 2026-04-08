@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { FiClock, FiFolder, FiPlus, FiSearch, FiSmile, FiType } from 'react-icons/fi'
+import { FiClock, FiFolder, FiPlus, FiSearch, FiSmile } from 'react-icons/fi'
 import { useNavigate } from 'react-router'
 import MainLayout from '@/layouts/main-layout'
 import { PageLoading } from '@/components'
@@ -18,6 +18,7 @@ const OrgListContent: React.FC = () => {
   const [pendingDeleteOrgId, setPendingDeleteOrgId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortMode, setSortMode] = useState<'TIME_DESC' | 'ALPHA_ASC'>('TIME_DESC')
+  const [showSortOptions, setShowSortOptions] = useState(false)
   const navigate = useNavigate()
 
   const filteredOrganizations = useMemo(() => {
@@ -74,32 +75,45 @@ const OrgListContent: React.FC = () => {
             My organizations
           </button>
 
-          <div className='flex flex-wrap items-center gap-2'>
+          <div className='relative flex justify-end'>
             <button
               type='button'
-              onClick={() => setSortMode('TIME_DESC')}
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                sortMode === 'TIME_DESC'
-                  ? 'bg-blue-900 text-white'
-                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-              }`}
+              onClick={() => setShowSortOptions((prev) => !prev)}
+              className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-100'
+              title='Sort options'
+              aria-label='Open sort options'
             >
-              <FiClock className='h-3.5 w-3.5' />
-              Time
+              <FiClock className='h-4 w-4' />
             </button>
 
-            <button
-              type='button'
-              onClick={() => setSortMode('ALPHA_ASC')}
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                sortMode === 'ALPHA_ASC'
-                  ? 'bg-blue-900 text-white'
-                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <FiType className='h-3.5 w-3.5' />
-              A-Z
-            </button>
+            {showSortOptions && (
+              <div className='absolute right-0 top-10 z-10 min-w-[150px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg'>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setSortMode('ALPHA_ASC')
+                    setShowSortOptions(false)
+                  }}
+                  className={`w-full rounded-md px-3 py-2 text-left text-xs font-medium transition-colors ${
+                    sortMode === 'ALPHA_ASC' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  Sort by name
+                </button>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setSortMode('TIME_DESC')
+                    setShowSortOptions(false)
+                  }}
+                  className={`w-full rounded-md px-3 py-2 text-left text-xs font-medium transition-colors ${
+                    sortMode === 'TIME_DESC' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  Sort by time
+                </button>
+              </div>
+            )}
           </div>
 
           <div className='max-h-[380px] space-y-1 overflow-y-auto rounded-xl border border-gray-200 bg-white p-2'>

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/services/api'
 import type {
+  OrganizationFolderAssetsResponse,
   OrganizationResource,
   OrganizationResourceType,
   ShareResourcePayload,
@@ -37,10 +38,25 @@ export function useOrganizationResources(orgId?: number, type?: OrganizationReso
     enabled: !!orgId,
     queryFn: async () => {
       try {
-        const res = await api.get<OrganizationResource[]>(`/organizations/${orgId}/resources`, {
+        const res = await api.get(`/organizations/${orgId}/resources`, {
           params: { type: type || undefined }
         })
-        return res.data
+
+        const rows = toArray<Record<string, unknown>>(res.data)
+        return rows.map((item) => ({
+          id: Number(item.id ?? Date.now()),
+          type: String(item.type ?? 'MEDIA') as OrganizationResourceType,
+          name: String(item.name ?? item.title ?? 'Untitled'),
+          thumbnail: typeof item.thumbnail === 'string' ? item.thumbnail : undefined,
+          instructor: typeof item.instructor === 'string' ? item.instructor : undefined,
+          folderItemCount: Number(item.folderItemCount ?? item.itemCount ?? 0),
+          mediaAssetId: Number(item.mediaAssetId ?? item.mediaId ?? item.id ?? 0) || undefined,
+          courseId: Number(item.courseId ?? item.id ?? 0) || undefined,
+          folderId: Number(item.folderId ?? item.libraryId ?? item.id ?? 0) || undefined,
+          sharedBy: Number(item.sharedBy ?? 0) || undefined,
+          sharedByName: typeof item.sharedByName === 'string' ? item.sharedByName : undefined,
+          createdAt: String(item.createdAt ?? new Date().toISOString())
+        }))
       } catch {
         return type ? mockResources.filter((x) => x.type === type) : mockResources
       }
@@ -61,8 +77,16 @@ export function useShareResource(orgId?: number) {
         return {
           id: Date.now(),
           type,
-          name: type === 'MEDIA' ? `Media #${payload.mediaAssetId}` : type === 'COURSE' ? `Course #${payload.courseId}` : `Folder #${payload.folderId}`,
+          name:
+            type === 'MEDIA'
+              ? `Media #${payload.mediaAssetId}`
+              : type === 'COURSE'
+                ? `Course #${payload.courseId}`
+                : `Folder #${payload.folderId}`,
           thumbnail: '',
+          mediaAssetId: payload.mediaAssetId,
+          courseId: payload.courseId,
+          folderId: payload.folderId,
           sharedBy: 1,
           sharedByName: 'You',
           instructor: type === 'COURSE' ? 'Unknown Instructor' : undefined,
@@ -84,6 +108,9 @@ export function useShareResource(orgId?: number) {
             : payload.type === 'COURSE'
               ? `Course #${payload.courseId}`
               : `Folder #${payload.folderId}`,
+        mediaAssetId: payload.mediaAssetId,
+        courseId: payload.courseId,
+        folderId: payload.folderId,
         sharedBy: 1,
         sharedByName: 'You',
         createdAt: new Date().toISOString()
@@ -124,17 +151,100 @@ export function useRemoveResource(orgId?: number) {
   })
 }
 
+function toArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[]
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    if (Array.isArray(record.content)) return record.content as T[]
+    if (Array.isArray(record.data)) return record.data as T[]
+    if (Array.isArray(record.items)) return record.items as T[]
+  }
+  return []
+}
+
+export function useOrganizationFolderAssets(orgId?: number, folderId?: number) {
+  return useQuery<OrganizationFolderAssetsResponse>({
+    queryKey: ['organization-folder-assets', orgId, folderId],
+    enabled: !!orgId && !!folderId,
+    queryFn: async () => {
+      const res = await api.get(`/organizations/${orgId}/folders/${folderId}/assets`)
+      const data = (res.data ?? {}) as Record<string, unknown>
+      const itemRows = toArray<Record<string, unknown>>(data.items)
+
+      return {
+        orgId: Number(data.orgId ?? orgId ?? 0),
+        resourceId: Number(data.resourceId ?? 0),
+        folderId: Number(data.folderId ?? folderId ?? 0),
+        folderName: typeof data.folderName === 'string' ? data.folderName : undefined,
+        items: itemRows
+          .map((item) => ({
+            mediaId: Number(item.mediaId ?? item.id ?? 0),
+            title: typeof item.title === 'string' ? item.title : undefined,
+            description: typeof item.description === 'string' ? item.description : undefined,
+            originalFileName: typeof item.originalFileName === 'string' ? item.originalFileName : undefined,
+            mediaType: typeof item.mediaType === 'string' ? item.mediaType : undefined,
+            uploadedAt: typeof item.uploadedAt === 'string' ? item.uploadedAt : undefined,
+            updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : undefined,
+            metadata: item.metadata
+          }))
+          .filter((item) => Number.isFinite(item.mediaId) && item.mediaId > 0)
+      }
+    }
+  })
+}
+
 export function useSelectableResources() {
   return useQuery<{ media: SelectableMedia[]; courses: SelectableCourse[]; folders: SelectableFolder[] }>({
     queryKey: ['organization-selectable-resources'],
     queryFn: async () => {
       try {
-        const [mediaRes, courseRes, folderRes] = await Promise.all([
-          api.get<SelectableMedia[]>('/media-assets/me'),
-          api.get<SelectableCourse[]>('/courses'),
-          api.get<SelectableFolder[]>('/libraries')
-        ])
-        return { media: mediaRes.data || [], courses: courseRes.data || [], folders: folderRes.data || [] }
+        const [courseRes, folderRes] = await Promise.all([api.get('/courses'), api.get('/libraries')])
+
+        const courses = toArray<Record<string, unknown>>(courseRes.data)
+          .map((item) => ({
+            id: Number(item.id ?? item.courseId),
+            name: String(item.name ?? item.courseName ?? item.title ?? 'Untitled course'),
+            instructor: typeof item.instructor === 'string' ? item.instructor : undefined
+          }))
+          .filter((item) => Number.isFinite(item.id))
+
+        const folders = toArray<Record<string, unknown>>(folderRes.data)
+          .map((item) => ({
+            id: Number(item.id ?? item.libraryId ?? item.folderId),
+            name: String(item.name ?? item.libraryName ?? item.folderName ?? 'Untitled folder'),
+            itemCount: Number(item.itemCount ?? item.totalItems ?? 0)
+          }))
+          .filter((item) => Number.isFinite(item.id))
+
+        const folderAssets = await Promise.all(
+          folders.map(async (folder) => {
+            try {
+              const assetsRes = await api.get(`/libraries/${folder.id}/assets`)
+              const rows = toArray<Record<string, unknown>>(assetsRes.data)
+              return rows
+                .filter((asset) => String(asset.mediaType ?? '').toUpperCase() === 'IMAGE')
+                .map((asset) => ({
+                  id: Number(asset.id ?? asset.mediaAssetId),
+                  name: String(asset.title ?? asset.name ?? asset.originalFileName ?? `Image #${asset.id ?? ''}`),
+                  thumbnail:
+                    typeof asset.publicUrl === 'string'
+                      ? asset.publicUrl
+                      : typeof asset.thumbnail === 'string'
+                        ? asset.thumbnail
+                        : undefined
+                }))
+                .filter((asset) => Number.isFinite(asset.id))
+            } catch {
+              return [] as SelectableMedia[]
+            }
+          })
+        )
+
+        const mediaMap = new Map<number, SelectableMedia>()
+        folderAssets.flat().forEach((m) => mediaMap.set(m.id, m))
+        const media = Array.from(mediaMap.values())
+
+        return { media, courses, folders }
       } catch {
         return {
           media: [
@@ -154,4 +264,3 @@ export function useSelectableResources() {
     }
   })
 }
-

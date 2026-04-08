@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import ResourceCard from './ResourceCard'
 import ShareResourceModal from './ShareResourceModal'
 import { useOrganizationResources, useRemoveResource, useShareResource } from '../hook/useResource'
@@ -11,6 +12,7 @@ interface ResourcesTabProps {
 }
 
 const ResourcesTab: React.FC<ResourcesTabProps> = ({ orgId, canManage = false, onToast }) => {
+  const navigate = useNavigate()
   const [searchInput, setSearchInput] = useState('')
   const [searchText, setSearchText] = useState('')
   const [filter, setFilter] = useState<OrganizationResourceType | 'ALL'>('ALL')
@@ -47,6 +49,22 @@ const ResourcesTab: React.FC<ResourcesTabProps> = ({ orgId, canManage = false, o
       onSuccess: () => onToast?.('Resource removed', 'success'),
       onError: () => onToast?.('Failed to remove resource', 'error')
     })
+  }
+
+  const handleOpenResource = (resource: OrganizationResource) => {
+    if (resource.type === 'COURSE') {
+      const courseId = resource.courseId ?? resource.id
+      navigate(`/my-course/editor/${courseId}`)
+      return
+    }
+
+    if (resource.type === 'FOLDER') {
+      const folderId = resource.folderId ?? resource.id
+      navigate(`/organizations/${orgId}/resources/folders/${folderId}`)
+      return
+    }
+
+    onToast?.(`Open ${resource.name}`, 'success')
   }
 
   return (
@@ -96,7 +114,7 @@ const ResourcesTab: React.FC<ResourcesTabProps> = ({ orgId, canManage = false, o
               key={resource.id}
               resource={resource}
               canRemove={canManage}
-              onOpen={() => onToast?.(`Open ${resource.name}`, 'success')}
+              onOpen={handleOpenResource}
               onRemove={handleRemove}
             />
           ))}

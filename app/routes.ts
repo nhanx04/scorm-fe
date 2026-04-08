@@ -9,5 +9,6 @@ export default [
   route('/my-course/editor/:courseId', 'routes/course-editor.tsx'),
   route('/library', 'routes/library.tsx'),
   route('/organization', 'routes/organizations.tsx'),
-  route('/organizations/:orgId', 'routes/organization-detail.tsx')
+  route('/organizations/:orgId', 'routes/organization-detail.tsx'),
+  route('/organizations/:orgId/resources/folders/:folderId', 'routes/organization-shared-folder.tsx')
 ] satisfies RouteConfig

@@ -14,6 +14,7 @@ interface ItemListProps {
   deleting?: boolean
   onDeleteMedia: (mediaId: number, mediaTitle: string) => void
   onBulkDeleteMedia: (payload: { libraryId: number; mediaIds: number[] }) => void
+  onPreviewImage: (payload: { imageUrl?: string; imageName: string }) => void
 }
 
 function toFileType(type: MediaItem['mediaType']): FileCardType {
@@ -60,7 +61,8 @@ const ItemList: React.FC<ItemListProps> = ({
   onRefresh,
   deleting = false,
   onDeleteMedia,
-  onBulkDeleteMedia
+  onBulkDeleteMedia,
+  onPreviewImage
 }) => {
   const [sortBy, setSortBy] = useState<SortValue>('date')
   const [hideMeta, setHideMeta] = useState(false)
@@ -92,16 +94,16 @@ const ItemList: React.FC<ItemListProps> = ({
     <div className='space-y-4'>
       <div className='flex items-center gap-4'>
         <button
-          className='inline-flex items-center gap-1 text-sm font-medium text-blue-600 transition hover:text-blue-800'
+          className='inline-flex items-center gap-1 rounded-full border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100'
           onClick={onBack}
           type='button'
         >
-          <FiArrowLeft size={18} /> Back
+          <FiArrowLeft size={16} /> Back
         </button>
         <h2 className='text-xl font-semibold text-gray-900'>{library.libraryName}</h2>
         <div className='ml-auto flex items-center gap-2'>
           <button
-            className='inline-flex items-center gap-2 rounded-lg bg-blue-900 px-3 py-2 text-sm font-medium text-white transition-all duration-150 hover:brightness-110'
+            className='inline-flex items-center gap-2 rounded-full bg-blue-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-800'
             onClick={onOpenUpload}
             type='button'
           >
@@ -174,6 +176,11 @@ const ItemList: React.FC<ItemListProps> = ({
                     onDeleteMedia(item.mediaId, item.title)
                     setSelectedIds((prev) => prev.filter((id) => id !== item.mediaId))
                   }
+                : undefined
+            }
+            onClick={
+              item.mediaType === 'IMAGE'
+                ? () => onPreviewImage({ imageUrl: readPreviewUrl(item), imageName: item.title })
                 : undefined
             }
             onToggleSelect={

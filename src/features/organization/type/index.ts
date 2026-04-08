@@ -43,6 +43,9 @@ export interface OrganizationResource {
   thumbnail?: string
   instructor?: string
   folderItemCount?: number
+  mediaAssetId?: number
+  courseId?: number
+  folderId?: number
   sharedBy?: number
   sharedByName?: string
   createdAt: string
@@ -71,6 +74,25 @@ export interface SelectableFolder {
   id: number
   name: string
   itemCount?: number
+}
+
+export interface OrganizationFolderAssetItem {
+  mediaId: number
+  title?: string
+  description?: string
+  originalFileName?: string
+  mediaType?: string
+  uploadedAt?: string
+  updatedAt?: string
+  metadata?: unknown
+}
+
+export interface OrganizationFolderAssetsResponse {
+  orgId: number
+  resourceId: number
+  folderId: number
+  folderName?: string
+  items: OrganizationFolderAssetItem[]
 }
 
 export interface OrganizationActivity {
