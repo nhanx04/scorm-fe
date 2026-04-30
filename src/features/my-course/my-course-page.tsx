@@ -330,8 +330,18 @@ const MyCourseContent: React.FC = () => {
             placeholder='Search courses by title or description...'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className='w-full border border-gray-300 rounded-xl py-3 pl-12 pr-4 text-base focus:outline-none focus:ring-1 focus:ring-gray-800 transition-colors'
+            className='w-full border border-gray-300 rounded-xl py-3 pl-12 pr-12 text-base focus:outline-none focus:ring-1 focus:ring-gray-800 transition-colors'
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none p-1 rounded-full hover:bg-gray-100 transition-colors'
+              title='Clear search'
+            >
+              <FiX className='w-4 h-4' />
+            </button>
+          )}
         </div>
 
         <div className='flex items-center justify-between mb-6'>
@@ -397,7 +407,7 @@ const MyCourseContent: React.FC = () => {
             {/* 4. CẬP NHẬT CÂU THÔNG BÁO KHI KHÔNG TÌM THẤY */}
             <p>
               {searchQuery.trim() !== ''
-                ? `No courses found matching "${searchQuery}"`
+                ? `No courses found matching search`
                 : `No courses found for "${selectedStatus}" status.`}
             </p>
           </div>

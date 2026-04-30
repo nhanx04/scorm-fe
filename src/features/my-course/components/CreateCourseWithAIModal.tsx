@@ -32,16 +32,18 @@ const TextInput: React.FC<{
   placeholder?: string
   helperText?: string
   required?: boolean
-}> = ({ label, value, onChange, placeholder, helperText, required }) => (
-  <label className='block'>
+  disabled?: boolean
+}> = ({ label, value, onChange, placeholder, helperText, required, disabled }) => (
+  <label className={`block ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
     <div className='mb-1.5 text-sm font-semibold text-gray-800'>
-      {label} {required && <span className='text-red-500'>*</span>}
+      {label} {required && !disabled && <span className='text-red-500'>*</span>}
     </div>
     <input
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className='w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-all duration-150 placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100'
+      disabled={disabled}
+      className='w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-all duration-150 placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed disabled:hover:border-gray-200'
     />
     {helperText && <p className='mt-1 text-xs text-gray-500'>{helperText}</p>}
   </label>
@@ -55,13 +57,14 @@ const TextAreaInput: React.FC<{
   helperText?: string
   required?: boolean
   maxLength?: number
-}> = ({ label, value, onChange, placeholder, helperText, required, maxLength }) => (
-  <label className='block'>
+  disabled?: boolean
+}> = ({ label, value, onChange, placeholder, helperText, required, maxLength, disabled }) => (
+  <label className={`block ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
     <div className='mb-1.5 flex items-center justify-between'>
       <span className='text-sm font-semibold text-gray-800'>
-        {label} {required && <span className='text-red-500'>*</span>}
+        {label} {required && !disabled && <span className='text-red-500'>*</span>}
       </span>
-      {maxLength ? (
+      {maxLength && !disabled ? (
         <span className='text-xs text-gray-400'>
           {value.length}/{maxLength}
         </span>
@@ -72,7 +75,8 @@ const TextAreaInput: React.FC<{
       onChange={(e) => onChange(maxLength ? e.target.value.slice(0, maxLength) : e.target.value)}
       placeholder={placeholder}
       rows={4}
-      className='w-full resize-y rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-all duration-150 placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100'
+      disabled={disabled}
+      className='w-full resize-y rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-all duration-150 placeholder:text-gray-400 hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed disabled:hover:border-gray-200'
     />
     {helperText && <p className='mt-1 text-xs text-gray-500'>{helperText}</p>}
   </label>
@@ -84,15 +88,17 @@ const SelectInput: React.FC<{
   onChange: (value: ProficiencyLevel) => void
   helperText?: string
   required?: boolean
-}> = ({ label, value, onChange, helperText, required }) => (
-  <label className='block'>
+  disabled?: boolean
+}> = ({ label, value, onChange, helperText, required, disabled }) => (
+  <label className={`block ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
     <div className='mb-1.5 text-sm font-semibold text-gray-800'>
-      {label} {required && <span className='text-red-500'>*</span>}
+      {label} {required && !disabled && <span className='text-red-500'>*</span>}
     </div>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value as ProficiencyLevel)}
-      className='w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-all duration-150 hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100'
+      disabled={disabled}
+      className='w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 transition-all duration-150 hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed disabled:hover:border-gray-200'
     >
       <option value=''>Select level</option>
       <option value='Beginner'>Beginner</option>
@@ -120,6 +126,9 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
 
+  // Biến xác định xem form có bị khóa hay không (bị khóa nếu đã chọn file)
+  const isFormDisabled = !!referenceFile;
+
   useEffect(() => {
     if (!open) return
     const onEsc = (e: KeyboardEvent) => {
@@ -133,9 +142,11 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  // Cập nhật điều kiện Generate: Có file HOẶC điền đủ form
   const canGenerate = useMemo(() => {
+    if (referenceFile) return true;
     return Boolean(form.courseTitle.trim() && form.courseDescription.trim() && form.learningGoal.trim())
-  }, [form.courseTitle, form.courseDescription, form.learningGoal])
+  }, [form.courseTitle, form.courseDescription, form.learningGoal, referenceFile])
 
   const handleDrop: React.DragEventHandler<HTMLLabelElement> = (e) => {
     e.preventDefault()
@@ -151,6 +162,11 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
     setReferenceFile(file)
   }
 
+  // Hàm xóa file đã chọn
+  const handleRemoveFile = () => {
+    setReferenceFile(null);
+  }
+
   const handleGenerate = async () => {
     if (!canGenerate || isGenerating) return
     setIsGenerating(true)
@@ -159,8 +175,6 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
       onClose()
     } catch (error) {
       console.error('Lỗi khi gọi onGenerate trong Modal:', error)
-      // Khi có lỗi ném ra từ onGenerate, nó sẽ nhảy thẳng vào đây và không gọi onClose(), 
-      // cho phép modal vẫn mở và người dùng có thể thử lại.
     } finally {
       setIsGenerating(false)
     }
@@ -199,40 +213,58 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               <FiUploadCloud className='h-4 w-4 text-blue-600' />
               <h3 className='text-sm font-bold text-gray-900'>Upload Reference File</h3>
             </div>
-            <label
-              onDragOver={(e) => {
-                e.preventDefault()
-                setDragActive(true)
-              }}
-              onDragLeave={() => setDragActive(false)}
-              onDrop={handleDrop}
-              className={`block cursor-pointer rounded-xl border-2 border-dashed p-5 text-center transition-all duration-150 ${
-                dragActive
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50/40'
-              }`}
-            >
-              <input
-                type='file'
-                accept='.pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain'
-                className='hidden'
-                onChange={(e) => handleFileChange(e.target.files?.[0])}
-              />
-              <p className='text-sm font-medium text-gray-700'>Drag & drop file here or click to upload</p>
-              <p className='mt-1 text-xs text-gray-500'>Accepted formats: PDF, DOCX, TXT (optional)</p>
-            </label>
-            {referenceFile ? (
-              <div className='mt-3 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2'>
-                <FiFileText className='h-4 w-4 text-gray-500' />
-                <div className='min-w-0'>
-                  <p className='truncate text-sm font-medium text-gray-800'>{referenceFile.name}</p>
-                  <p className='text-xs text-gray-500'>{Math.max(referenceFile.size / 1024, 1).toFixed(1)} KB</p>
+            
+            {!referenceFile ? (
+              <label
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  setDragActive(true)
+                }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={handleDrop}
+                className={`block cursor-pointer rounded-xl border-2 border-dashed p-5 text-center transition-all duration-150 ${
+                  dragActive
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50/40'
+                }`}
+              >
+                <input
+                  type='file'
+                  accept='.pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain'
+                  className='hidden'
+                  onChange={(e) => handleFileChange(e.target.files?.[0])}
+                />
+                <p className='text-sm font-medium text-gray-700'>Drag & drop file here or click to upload</p>
+                <p className='mt-1 text-xs text-gray-500'>Accepted formats: PDF, DOCX, TXT (optional)</p>
+              </label>
+            ) : (
+              // Hiển thị file đã upload với nút xóa
+              <div className='mt-3 flex items-center justify-between gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2'>
+                <div className='flex items-center gap-2 min-w-0'>
+                  <FiFileText className='h-5 w-5 shrink-0 text-blue-500' />
+                  <div className='min-w-0'>
+                    <p className='truncate text-sm font-semibold text-blue-900'>{referenceFile.name}</p>
+                    <p className='text-xs text-blue-600'>{Math.max(referenceFile.size / 1024, 1).toFixed(1)} KB</p>
+                  </div>
                 </div>
+                <button 
+                  onClick={handleRemoveFile}
+                  className='shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-blue-100 hover:text-red-500 transition-colors'
+                  title="Remove file"
+                >
+                  <FiX className='h-5 w-5' />
+                </button>
               </div>
-            ) : null}
+            )}
+
+            {isFormDisabled && (
+              <p className='mt-3 text-xs font-medium text-blue-600'>
+                Reference file attached. AI will generate the course outline automatically from this file.
+              </p>
+            )}
           </section>
 
-          <section className='rounded-2xl border border-gray-200 bg-gray-50/70 p-4'>
+          <section className={`rounded-2xl border border-gray-200 bg-gray-50/70 p-4 transition-all duration-200 ${isFormDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className='mb-4 flex items-center gap-2'>
               <FiBookOpen className='h-4 w-4 text-blue-600' />
               <h3 className='text-sm font-bold text-gray-900'>Describe Your Course</h3>
@@ -241,6 +273,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               <TextAreaInput
                 label='Course Description'
                 required
+                disabled={isFormDisabled}
                 value={form.courseDescription}
                 onChange={(value) => updateField('courseDescription', value)}
                 placeholder='Describe what your course is about...'
@@ -249,6 +282,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               />
               <TextInput
                 label='Target Audience'
+                disabled={isFormDisabled}
                 value={form.targetAudience}
                 onChange={(value) => updateField('targetAudience', value)}
                 placeholder='Who is this course for?'
@@ -257,12 +291,14 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <SelectInput
                   label='Audience Proficiency Level'
+                  disabled={isFormDisabled}
                   value={form.proficiencyLevel}
                   onChange={(value) => updateField('proficiencyLevel', value)}
                   helperText='Choose how deep and technical the content should be.'
                 />
                 <TextInput
                   label='Duration'
+                  disabled={isFormDisabled}
                   value={form.duration}
                   onChange={(value) => updateField('duration', value)}
                   placeholder='e.g. 2 hours, 3 days...'
@@ -271,6 +307,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               </div>
               <TextInput
                 label='Language'
+                disabled={isFormDisabled}
                 value={form.language}
                 onChange={(value) => updateField('language', value)}
                 placeholder='Vietnamese / English...'
@@ -278,7 +315,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
             </div>
           </section>
 
-          <section className='rounded-2xl border border-gray-200 bg-gray-50/70 p-4'>
+          <section className={`rounded-2xl border border-gray-200 bg-gray-50/70 p-4 transition-all duration-200 ${isFormDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className='mb-2 flex items-center justify-between gap-2'>
               <div className='flex items-center gap-2'>
                 <FiTarget className='h-4 w-4 text-blue-600' />
@@ -286,10 +323,11 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               </div>
               <button
                 type='button'
+                disabled={isFormDisabled}
                 onClick={() => {
                   void handleFakeSuggestion()
                 }}
-                className='inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100'
+                className='inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 <FiZap className='h-3.5 w-3.5' />
                 {isSuggesting ? 'Generating...' : 'AI Suggestion'}
@@ -301,6 +339,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               <TextAreaInput
                 label='Learning Goal'
                 required
+                disabled={isFormDisabled}
                 value={form.learningGoal}
                 onChange={(value) => updateField('learningGoal', value)}
                 placeholder='What do you want learners to do after finishing?'
@@ -309,6 +348,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               />
               <TextAreaInput
                 label='Required Knowledge'
+                disabled={isFormDisabled}
                 value={form.requiredKnowledge}
                 onChange={(value) => updateField('requiredKnowledge', value)}
                 placeholder='What should learners already know?'
@@ -318,6 +358,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               <TextInput
                 label='Course Title'
                 required
+                disabled={isFormDisabled}
                 value={form.courseTitle}
                 onChange={(value) => updateField('courseTitle', value)}
                 placeholder='Enter course title...'
@@ -325,6 +366,7 @@ const CreateCourseWithAIModal: React.FC<CreateCourseWithAIModalProps> = ({ open,
               />
               <TextAreaInput
                 label='Additional Instructions'
+                disabled={isFormDisabled}
                 value={form.additionalInstructions}
                 onChange={(value) => updateField('additionalInstructions', value)}
                 placeholder='Any tone/style/constraints you want AI to follow...'
