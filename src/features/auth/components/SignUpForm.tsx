@@ -80,7 +80,7 @@ const SignUpForm: React.FC = () => {
 
       <p className='text-center text-sm text-gray-600'>
         Already have an account?{' '}
-        <a href='/signin' className='text-blue-900 font-medium hover:underline'>
+        <a href='/' className='text-blue-900 font-medium hover:underline'>
           Sign In
         </a>
       </p>
