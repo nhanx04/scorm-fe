@@ -136,6 +136,7 @@ export const courseApi = {
   updateCourse: (courseId: number | string, payload: UpdateCourseRequest) =>
     api.patch<CourseResponse>(`/courses/${courseId}`, payload),
   listCourses: () => api.get<CourseResponse[]>('/courses'),
+  getRecentCourses: (limit: number = 6) => api.get<CourseResponse[]>(`/courses/recent?limit=${limit}`),
   getCourseById: (courseId: number | string) => api.get<CourseResponse>(`/courses/${courseId}`),
   deleteCourse: (courseId: number | string) => api.delete(`/courses/${courseId}`),
   importScormPackage: (file: File) => {

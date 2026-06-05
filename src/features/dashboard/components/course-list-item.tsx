@@ -19,7 +19,7 @@ const CourseListItem: React.FC<CourseListItemProps> = ({ course }) => {
         <img src={course.thumbnailUrl} alt={course.title} className='h-28 w-full rounded-xl object-cover md:w-40' />
         <div className='flex flex-1 flex-col gap-3'>
           <div className='flex flex-wrap items-center gap-2'>
-            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusMap[course.status]}`}>{course.status}</span>
+            {/* <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusMap[course.status]}`}>{course.status}</span> */}
             <span className='text-xs text-slate-500 dark:text-slate-400'>{course.category}</span>
           </div>
           <div>
@@ -35,7 +35,10 @@ const CourseListItem: React.FC<CourseListItemProps> = ({ course }) => {
             </span>
           </div>
           <div className='h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800'>
-            <div className='h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400' style={{ width: `${course.progress}%` }} />
+            <div
+              className='h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400'
+              style={{ width: `${course.progress}%` }}
+            />
           </div>
         </div>
       </div>
@@ -44,4 +47,3 @@ const CourseListItem: React.FC<CourseListItemProps> = ({ course }) => {
 }
 
 export default CourseListItem
-

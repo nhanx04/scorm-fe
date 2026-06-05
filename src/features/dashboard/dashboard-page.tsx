@@ -1,25 +1,55 @@
-import React, { useMemo, useState } from 'react'
-import { FiPlus, FiSearch, FiStar, FiZap } from 'react-icons/fi'
+import React, { useMemo, useState, useEffect } from 'react'
+import { FiSearch, FiZap } from 'react-icons/fi'
 import MainLayout from '@/layouts/main-layout'
-import { activityTimeline, aiSuggestions, dashboardStats, quickActions, recentCourses, templates } from './mock-data'
+import { activityTimeline, aiSuggestions, quickActions, templates } from './mock-data'
 import {
-  ActionButton,
-  AssistantItem,
   CourseListItem,
-  InsightItem,
-  PathCard,
   SectionHeader,
-  TimelineItemRow
+  HeroBanner,
+  ExpandableActionCard,
+  ModernAssistantItem,
+  ActivityFeed,
+  TemplateGrid
 } from './components'
 import { PageLoading } from '@/components'
+import type { DashboardCourse } from './types'
+import { courseApi } from '@/services/api'
 
 type CourseFilter = 'All' | 'Lessons' | 'Exams' | 'Chapters'
 
 const DashboardContent: React.FC = () => {
   const [filter, setFilter] = useState<CourseFilter>('All')
   const [search, setSearch] = useState('')
+  const [recentCourses, setRecentCourses] = useState<DashboardCourse[]>([])
+  const [isPageLoading, setIsPageLoading] = useState(true)
 
-  const isPageLoading = false
+  useEffect(() => {
+    const fetchRecentCourses = async () => {
+      try {
+        const { data } = await courseApi.getRecentCourses(6)
+        setRecentCourses(
+          data.map((course) => ({
+            id: course.courseId.toString(),
+            title: course.title,
+            description: course.description || '',
+            thumbnailUrl:
+              course.coverImageUrl ||
+              'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=800&q=80',
+            status: course.status === 'PUBLISHED' ? 'Published' : course.status === 'EXPORTED' ? 'Exported' : 'Draft',
+            progress: course.status === 'PUBLISHED' ? 100 : 62,
+            lastUpdated: 'Recently',
+            category: 'Lessons'
+          }))
+        )
+      } catch (error) {
+        console.error('Failed to fetch recent courses:', error)
+      } finally {
+        setIsPageLoading(false)
+      }
+    }
+
+    fetchRecentCourses()
+  }, [])
 
   const filteredCourses = useMemo(() => {
     return recentCourses.filter((course) => {
@@ -27,7 +57,7 @@ const DashboardContent: React.FC = () => {
       const searchMatch = course.title.toLowerCase().includes(search.toLowerCase())
       return filterMatch && searchMatch
     })
-  }, [filter, search])
+  }, [filter, search, recentCourses])
 
   if (isPageLoading) {
     return <PageLoading loading={isPageLoading} text='Loading dashboard...' minHeightClassName='min-h-[60vh]' />
@@ -38,47 +68,20 @@ const DashboardContent: React.FC = () => {
       <div className='flex-1 overflow-y-auto bg-white px-16 py-10'>
         <h1 className='mb-6 text-[32px] font-bold text-gray-900'>Dashboard</h1>
 
-        <section className='mb-10 rounded-xl border border-gray-200 bg-gray-50 p-8'>
-          <div className='flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between'>
-            <div className='max-w-2xl space-y-3'>
-              <p className='text-xs font-medium uppercase tracking-[0.2em] text-blue-700'>Learning workspace</p>
-              <h2 className='text-3xl font-bold text-gray-900'>Continue your learning journey</h2>
-              <p className='text-base text-gray-600'>
-                Return to your drafting flow, build new SCORM modules, and keep learners on track.
-              </p>
-              <div className='flex flex-wrap gap-3'>
-                <button className='inline-flex items-center gap-2 rounded-full bg-blue-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-800'>
-                  <FiStar className='h-4 w-4' /> Create with AI
-                </button>
-                <button className='inline-flex items-center gap-2 rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-100'>
-                  <FiPlus className='h-4 w-4' /> New course
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Hero Banner */}
+        <HeroBanner />
 
-        <section className='mb-10 space-y-6'>
-          <SectionHeader
-            title='Learning insights'
-            subtitle='A quick snapshot of your learning production this month.'
-          />
-          <div className='grid gap-6 md:grid-cols-2 xl:grid-cols-4'>
-            {dashboardStats.map((item) => (
-              <InsightItem key={item.id} item={item} />
-            ))}
-          </div>
-        </section>
-
+        {/* Learning Actions - Expandable Cards */}
         <section className='mb-10 space-y-6'>
           <SectionHeader title='Learning actions' subtitle='Start a new course or extend an existing learning path.' />
-          <div className='grid gap-6 md:grid-cols-2'>
+          <div className='grid gap-4 md:grid-cols-2'>
             {quickActions.map((item) => (
-              <ActionButton key={item.id} item={item} />
+              <ExpandableActionCard key={item.id} item={item} />
             ))}
           </div>
         </section>
 
+        {/* Recent Courses */}
         <section className='mb-10 space-y-6'>
           <div className='flex flex-wrap items-end justify-between gap-4'>
             <SectionHeader title='Recent courses' subtitle='Drafts and published modules you were working on.' />
@@ -117,6 +120,7 @@ const DashboardContent: React.FC = () => {
           </div>
         </section>
 
+        {/* AI Learning Assistant */}
         <section className='mb-10 space-y-6'>
           <SectionHeader
             title='AI learning assistant'
@@ -124,27 +128,20 @@ const DashboardContent: React.FC = () => {
           />
           <div className='grid gap-6 md:grid-cols-2'>
             {aiSuggestions.map((item) => (
-              <AssistantItem key={item.id} item={item} />
+              <ModernAssistantItem key={item.id} item={item} />
             ))}
           </div>
         </section>
 
+        {/* Activity Feed & Learning Paths */}
         <section className='grid gap-8 lg:grid-cols-[1.3fr_1fr]'>
           <div className='space-y-6'>
             <SectionHeader title='Learning activity' subtitle='A timeline of creation and export events.' />
-            <div className='rounded-xl border border-gray-200 bg-white p-6'>
-              {activityTimeline.map((item, idx) => (
-                <TimelineItemRow key={item.id} item={item} isLast={idx === activityTimeline.length - 1} />
-              ))}
-            </div>
+            <ActivityFeed items={activityTimeline} />
           </div>
           <div className='space-y-6'>
             <SectionHeader title='Learning paths' subtitle='Starter templates for common course structures.' />
-            <div className='grid gap-4 sm:grid-cols-2'>
-              {templates.map((item) => (
-                <PathCard key={item.id} item={item} />
-              ))}
-            </div>
+            <TemplateGrid items={templates} />
             <div className='rounded-xl border border-gray-200 bg-gray-50 p-6 text-base text-gray-700'>
               <div className='flex items-center gap-3'>
                 <FiZap className='h-5 w-5 text-blue-700' />
