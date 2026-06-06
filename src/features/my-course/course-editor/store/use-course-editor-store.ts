@@ -32,6 +32,7 @@ type EditorActions = {
   removeSection: (sectionId: string) => void
   addPage: (sectionId: string, type?: Page['type']) => void
   updatePage: (pageId: string, data: Partial<Page>) => void
+  removePage: (pageId: string) => void
   setActivePage: (pageId: string | null) => void
   addBlock: (pageId: string, type: BlockType) => void
   updateBlock: (pageId: string, blockId: string, data: Partial<Block>) => void
@@ -244,6 +245,21 @@ export const useCourseEditorStore = create<EditorStore>()(
       set((s) => {
         if (!s.pages[pageId]) return
         Object.assign(s.pages[pageId], data)
+      }),
+    removePage: (pageId) =>
+      set((s) => {
+        const sectionId = s.sectionOrder.find((sid) => (s.pageOrder[sid] ?? []).includes(pageId))
+        if (!sectionId) return
+
+        s.pageOrder[sectionId] = (s.pageOrder[sectionId] ?? []).filter((id) => id !== pageId)
+        delete s.pages[pageId]
+        delete s.blockOrder[pageId]
+        delete s.questionOrder[pageId]
+
+        if (s.activePageId === pageId) {
+          const nextPage = s.pageOrder[sectionId]?.[0] || null
+          s.activePageId = nextPage
+        }
       }),
     setActivePage: (pageId) => set((s) => void (s.activePageId = pageId)),
     addBlock: (pageId, type) =>

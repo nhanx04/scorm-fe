@@ -29,14 +29,14 @@ const HeroBanner: React.FC = () => {
           <div className='flex flex-wrap gap-4'>
             <button
               onClick={handleNavigate}
-              className='inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-indigo-600 transition-all hover:bg-indigo-50 hover:shadow-lg'
+              className='inline-flex items-center cursor-pointer gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-indigo-600 transition-all hover:bg-indigo-50 hover:shadow-lg'
             >
               <Sparkles className='h-5 w-5' />
               Create with AI
             </button>
             <button
               onClick={handleNavigate}
-              className='inline-flex items-center gap-2 rounded-lg border-2 border-white bg-transparent px-6 py-3 font-semibold text-white transition-all hover:bg-white/10'
+              className='inline-flex cursor-pointer items-center gap-2 rounded-lg border-2 border-white bg-transparent px-6 py-3 font-semibold text-white transition-all hover:bg-white/10'
             >
               <BookOpen className='h-5 w-5' />
               New Course

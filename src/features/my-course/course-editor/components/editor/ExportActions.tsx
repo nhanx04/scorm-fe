@@ -44,7 +44,7 @@ const ExportActions: React.FC<Props> = ({ courseId }) => {
         interfaceSnapshot: state.theme
       })
       updateCourse({ serverId: savedCourseId })
-      setToast({ type: 'success', message: 'Đã lưu course vào database.' })
+      setToast({ type: 'success', message: 'Đã lưu dữ liệu' })
     } catch (error: any) {
       const status = error?.response?.status
       if (status === 401) {

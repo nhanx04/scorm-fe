@@ -49,6 +49,11 @@ const MyCourseContent: React.FC = () => {
   const [statusFilterOpen, setStatusFilterOpen] = useState<boolean>(false)
   const statusFilterRef = useRef<HTMLDivElement>(null)
 
+  // Quản lý bộ lọc tag
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set())
+  const [tagFilterOpen, setTagFilterOpen] = useState<boolean>(false)
+  const tagFilterRef = useRef<HTMLDivElement>(null)
+
   const newCourseBtnRef = useRef<HTMLButtonElement | null>(null)
   const newCourseMenuRef = useRef<HTMLDivElement | null>(null)
   const importScormInputRef = useRef<HTMLInputElement | null>(null)
@@ -228,7 +233,7 @@ const MyCourseContent: React.FC = () => {
     }
   }
 
-  // 2. LỌC KHOÁ HỌC KẾT HỢP TRẠNG THÁI & TỪ KHOÁ TÌM KIẾM
+  // 2. LỌC KHOÁ HỌC KẾT HỢP TRẠNG THÁI & TỪ KHOÁ TÌM KIẾM & TAG
   const filteredCourses = courses.filter((course) => {
     // Lọc theo trạng thái
     const currentStatus = course.status || 'Draft'
@@ -240,8 +245,14 @@ const MyCourseContent: React.FC = () => {
       course.title.toLowerCase().includes(searchLower) ||
       (course.description?.toLowerCase().includes(searchLower) ?? false)
 
-    return matchesStatus && matchesSearch
+    // Lọc theo tag - nếu có tag được chọn thì course phải có ít nhất 1 tag trùng
+    const matchesTags = selectedTags.size === 0 || (course.tags ?? []).some((tag) => selectedTags.has(tag))
+
+    return matchesStatus && matchesSearch && matchesTags
   })
+
+  // Lấy tất cả unique tags từ tất cả courses
+  const allTags = Array.from(new Set(courses.flatMap((course) => course.tags ?? [])))
 
   return (
     <div className='flex flex-1 h-full bg-white overflow-hidden'>
@@ -313,13 +324,20 @@ const MyCourseContent: React.FC = () => {
         <div className='flex flex-col gap-6'>
           <div>
             <h3 className='font-bold text-lg text-gray-900 mb-4'>My courses</h3>
-            <button className='w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-100 bg-transparent transition-colors'>
-              <FiFolderPlus className='w-4 h-4' />
-              New folder
-            </button>
-          </div>
-          <div>
-            <button className='text-gray-600 hover:text-gray-900 text-base font-normal'>Deleted courses</button>
+            {/* Course list */}
+            <div className='space-y-1 max-h-[400px] overflow-y-auto'>
+              {courses.map((course) => (
+                <button
+                  key={course.courseId}
+                  onClick={() => handleOpenCourse(course.courseId)}
+                  className='w-full text-left px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-sky-200 cursor-pointer truncate transition-colors'
+                  title={course.title}
+                >
+                  {course.title}
+                </button>
+              ))}
+              {courses.length === 0 && <p className='text-sm text-gray-500 px-3 py-2'>No courses yet</p>}
+            </div>
           </div>
         </div>
       </div>
@@ -389,11 +407,55 @@ const MyCourseContent: React.FC = () => {
               )}
             </div>
 
-            <button className='flex items-center gap-2 border border-gray-400 rounded-full px-5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors'>
-              <FiTag className='w-4 h-4' />
-              Tags
-              <FiChevronDown className='w-4 h-4' />
-            </button>
+            <div className='relative' ref={tagFilterRef}>
+              <button
+                onClick={() => setTagFilterOpen((v) => !v)}
+                className={`flex items-center gap-2 border rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+                  selectedTags.size > 0
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-400 text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <FiTag className='w-4 h-4' />
+                Tags {selectedTags.size > 0 && `(${selectedTags.size})`}
+                <FiChevronDown className={`w-4 h-4 transition-transform ${tagFilterOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {tagFilterOpen && (
+                <div className='absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-20'>
+                  {allTags.length === 0 ? (
+                    <p className='px-4 py-2 text-sm text-gray-500'>No tags available</p>
+                  ) : (
+                    allTags.map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setSelectedTags((prev) => {
+                            const next = new Set(prev)
+                            if (next.has(tag)) {
+                              next.delete(tag)
+                            } else {
+                              next.add(tag)
+                            }
+                            return next
+                          })
+                        }}
+                        className='w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors flex items-center gap-2'
+                      >
+                        <input
+                          type='checkbox'
+                          checked={selectedTags.has(tag)}
+                          onChange={() => {}}
+                          className='cursor-pointer'
+                        />
+                        <span>{tag}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
 
             <button className='flex flex-col items-center justify-center p-1 hover:bg-gray-100 rounded text-gray-700 transition-colors'>
               <div className='flex -space-x-1'>

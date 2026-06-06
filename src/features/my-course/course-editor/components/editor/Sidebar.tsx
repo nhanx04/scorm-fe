@@ -17,6 +17,7 @@ const Sidebar: React.FC = () => {
   const updateSection = useCourseEditorStore((state) => state.updateSection)
   const removeSection = useCourseEditorStore((state) => state.removeSection)
   const setActivePage = useCourseEditorStore((state) => state.setActivePage)
+  const removePage = useCourseEditorStore((state) => state.removePage)
   const theme = useCourseEditorStore((state) => state.theme)
 
   const [sectionToRemove, setSectionToRemove] = useState<string | null>(null)
@@ -88,6 +89,7 @@ const Sidebar: React.FC = () => {
               onSectionTitleChange={(value) => updateSection(section.id, { title: value })}
               onAddPage={() => addPage(section.id, 'content')}
               onAddQuizPage={() => addPage(section.id, 'quiz')}
+              onDeletePage={removePage}
             />
           )
         })}

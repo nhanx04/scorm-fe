@@ -20,7 +20,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ block, onChange }) 
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [openLibrary, setOpenLibrary] = useState(false)
   const [selectedLibraryId, setSelectedLibraryId] = useState<number | undefined>()
-  const [urlInput, setUrlInput] = useState(block.imageUrl ?? '')
+  const [isHovering, setIsHovering] = useState(false)
 
   const librariesQuery = useLibraries()
   const libraryItemsQuery = useLibraryItems(selectedLibraryId)
@@ -39,60 +39,66 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ block, onChange }) 
 
   return (
     <div className='space-y-4'>
-      <div className='flex flex-wrap gap-2'>
-        <button
-          type='button'
-          onClick={() => inputRef.current?.click()}
-          className='rounded-full border bg-white px-3 py-1 text-sm hover:bg-gray-100'
-        >
-          Upload image
-        </button>
-        <button
-          type='button'
-          onClick={() => setOpenLibrary(true)}
-          className='rounded-full border bg-white px-3 py-1 text-sm hover:bg-gray-100'
-        >
-          Select from library
-        </button>
-      </div>
-
-      <div className='rounded-xl border border-gray-200 bg-white p-3'>
-        <label className='mb-2 block text-xs font-medium text-gray-600'>Fetch image from URL</label>
-        <div className='flex flex-col gap-2 sm:flex-row'>
-          <input
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            placeholder='https://example.com/image.jpg'
-            className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200'
-          />
-          <button
-            type='button'
-            onClick={() => {
-              if (!urlInput.trim()) return
-              onChange({ imageUrl: urlInput.trim() })
-            }}
-            className='rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100'
-          >
-            Use URL
-          </button>
-        </div>
-      </div>
-
-      <input ref={inputRef} type='file' accept='image/*' onChange={handleUpload} className='hidden' />
-
-      <div className='overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white'>
+      {/* Image preview with hover buttons */}
+      <div
+        className='overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white group'
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
         <div className='flex items-center justify-between border-b border-gray-100 px-4 py-2'>
           <p className='text-xs font-medium text-gray-600'>Image preview</p>
           {block.imageUrl && <p className='max-w-[220px] truncate text-[11px] text-gray-400'>{block.imageUrl}</p>}
         </div>
         {block.imageUrl ? (
-          <div className='grid place-items-center p-4 sm:p-6'>
+          <div className='grid place-items-center p-4 relative sm:p-6'>
             <div className='grid h-[220px] w-full place-items-center overflow-hidden rounded-xl bg-white p-3 shadow-inner sm:h-[320px]'>
               <img src={block.imageUrl} alt='Block' className='h-full w-full object-contain' />
             </div>
+
+            {/* Buttons appear on hover */}
+            {isHovering && (
+              <div className='absolute inset-0 flex items-center justify-center gap-2 bg-black/40 rounded-xl'>
+                <button
+                  type='button'
+                  onClick={() => inputRef.current?.click()}
+                  className='rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                >
+                  Upload image
+                </button>
+                <button
+                  type='button'
+                  onClick={() => setOpenLibrary(true)}
+                  className='rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                >
+                  Select from library
+                </button>
+              </div>
+            )}
           </div>
         ) : (
-          <div className='grid h-[180px] place-items-center p-6 text-sm text-gray-500'>No image selected</div>
+          <div className='grid h-[180px] place-items-center p-6 relative'>
+            <div className='text-sm text-gray-500'>No image selected</div>
+
+            {/* Buttons appear on hover for empty state */}
+            {isHovering && (
+              <div className='absolute inset-0 flex items-center justify-center gap-2 bg-black/40 rounded-xl'>
+                <button
+                  type='button'
+                  onClick={() => inputRef.current?.click()}
+                  className='rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                >
+                  Upload image
+                </button>
+                <button
+                  type='button'
+                  onClick={() => setOpenLibrary(true)}
+                  className='rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                >
+                  Select from library
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

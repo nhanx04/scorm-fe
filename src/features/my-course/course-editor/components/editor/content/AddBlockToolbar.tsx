@@ -142,7 +142,7 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'>
           <div className='w-full max-w-xl rounded-xl bg-white p-4 shadow-xl'>
             <h4 className='mb-3 text-sm font-semibold text-gray-800'>AI Assistant</h4>
-            <div className='grid gap-4 md:grid-cols-2'>
+            <div className='grid gap-4 md:grid-cols-1'>
               <div>
                 <p className='mb-2 text-xs font-semibold text-gray-600'>Generate lesson content</p>
                 <textarea
@@ -171,7 +171,7 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
                 </div>
               </div>
 
-              <div>
+              {/* <div>
                 <p className='mb-2 text-xs font-semibold text-gray-600'>Ask course Q&A</p>
                 <textarea
                   value={askPrompt}
@@ -196,7 +196,7 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
                     <p className='mt-1 whitespace-pre-line'>{askAnswer}</p>
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

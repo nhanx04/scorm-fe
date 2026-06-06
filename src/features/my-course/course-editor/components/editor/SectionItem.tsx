@@ -10,6 +10,7 @@ type SectionItemProps = {
   onSectionTitleChange: (value: string) => void
   onAddPage: () => void
   onAddQuizPage: () => void
+  onDeletePage?: (pageId: string) => void
 }
 
 const SectionItem: React.FC<SectionItemProps> = ({
@@ -19,7 +20,8 @@ const SectionItem: React.FC<SectionItemProps> = ({
   onSelectPage,
   onSectionTitleChange,
   onAddPage,
-  onAddQuizPage
+  onAddQuizPage,
+  onDeletePage
 }) => {
   return (
     <div className='rounded-xl bg-white border border-gray-200 p-3 space-y-2'>
@@ -36,6 +38,8 @@ const SectionItem: React.FC<SectionItemProps> = ({
             title={page.title}
             isActive={activePageId === page.id}
             onClick={() => onSelectPage(page.id)}
+            pageType={page.type === 'quiz' ? 'QUIZ' : 'CONTENT'}
+            onDelete={onDeletePage ? () => onDeletePage(page.id) : undefined}
           />
         ))}
       </div>

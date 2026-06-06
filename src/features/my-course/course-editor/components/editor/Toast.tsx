@@ -8,9 +8,14 @@ type ToastProps = {
 
 const Toast: React.FC<ToastProps> = ({ message, type = 'success', onClose }) => {
   return (
-    <div className='fixed bottom-6 right-6 z-50 rounded-lg border px-4 py-3 text-sm shadow-lg bg-white'>
-      <div className={`font-medium ${type === 'success' ? 'text-emerald-600' : 'text-red-600'}`}>{message}</div>
-      <button type='button' onClick={onClose} className='mt-2 text-xs text-gray-500 hover:text-gray-700'>
+    <div
+      className={`fixed bottom-6 right-6 z-50 min-w-[300px] rounded-lg px-5 py-4 shadow-xl text-white animate-fade-in ${
+        type === 'success' ? 'bg-green-600' : 'bg-red-600'
+      }`}
+    >
+      <div className='font-medium'>{message}</div>
+
+      <button type='button' onClick={onClose} className='mt-2 text-sm text-white/80 hover:text-white transition-colors'>
         Dismiss
       </button>
     </div>
@@ -18,4 +23,3 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'success', onClose }) => 
 }
 
 export default Toast
-

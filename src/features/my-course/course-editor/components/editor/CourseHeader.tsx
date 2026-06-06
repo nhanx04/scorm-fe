@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router'
+import { FiChevronDown } from 'react-icons/fi'
 import { useCourseEditorStore } from '../../store/use-course-editor-store'
 import ExportActions from './ExportActions'
 import ThemePanel from './theme/ThemePanel'
@@ -92,9 +93,10 @@ const CourseHeader: React.FC = () => {
           <button
             type='button'
             onClick={() => setCollapsed((v) => !v)}
-            className='rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50'
+            className='rounded-lg p-2 text-gray-700 transition hover:bg-gray-100'
+            title={collapsed ? 'Expand' : 'Collapse'}
           >
-            {collapsed ? 'Expand Header' : 'Thu gọn'}
+            <FiChevronDown className={`w-5 h-5 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           </button>
           <ExportActions courseId={course.serverId ?? routeCourseId ?? course.id} />
         </div>
@@ -111,35 +113,11 @@ const CourseHeader: React.FC = () => {
           {!collapsed && (
             <>
               <div className='w-full space-y-2'>
-                <div className='flex items-center justify-end gap-2'>
-                  <button
-                    type='button'
-                    onClick={() => uploadInputRef.current?.click()}
-                    className='rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    Upload image
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => setPickerOpen(true)}
-                    className='rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    Chọn từ library
-                  </button>
-                  <input
-                    ref={uploadInputRef}
-                    type='file'
-                    accept='image/*'
-                    onChange={handleUploadCover}
-                    className='hidden'
-                  />
-                </div>
-
-                <div className='flex h-56 w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-gray-300 bg-gray-100 text-gray-500 transition hover:border-gray-400 hover:bg-gray-50'>
+                <div className='relative h-56 w-full overflow-hidden rounded-xl border border-dashed border-gray-300 bg-gray-100 text-gray-500 transition hover:border-gray-400 hover:bg-gray-50 group'>
                   {course.coverImageUrl ? (
                     <img src={course.coverImageUrl} alt='Course cover' className='h-full w-full object-cover' />
                   ) : (
-                    <div className='flex flex-col items-center gap-2'>
+                    <div className='flex flex-col items-center justify-center h-full gap-2'>
                       <div className='flex h-14 w-14 items-center justify-center rounded-full border border-gray-300 bg-white'>
                         <svg
                           aria-hidden='true'
@@ -161,6 +139,31 @@ const CourseHeader: React.FC = () => {
                       <span className='text-sm font-medium'>Upload cover image</span>
                     </div>
                   )}
+
+                  {/* Buttons appear on hover */}
+                  <div className='absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity'>
+                    <button
+                      type='button'
+                      onClick={() => uploadInputRef.current?.click()}
+                      className='rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                    >
+                      Upload image
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => setPickerOpen(true)}
+                      className='rounded-lg bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                    >
+                      Chọn từ library
+                    </button>
+                    <input
+                      ref={uploadInputRef}
+                      type='file'
+                      accept='image/*'
+                      onChange={handleUploadCover}
+                      className='hidden'
+                    />
+                  </div>
                 </div>
               </div>
 
