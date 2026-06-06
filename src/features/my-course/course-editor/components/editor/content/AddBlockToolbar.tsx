@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useParams } from 'react-router'
 import type { BlockType, Page } from '../../../types/editor.types'
 import { useCourseEditorStore } from '../../../store/use-course-editor-store'
 import { askKnowledge, generatePageContent } from '../../../api/aiApi'
@@ -18,6 +19,10 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
   const course = useCourseEditorStore((state) => state.course)
   const sections = useCourseEditorStore((state) => state.sections)
   const pageOrder = useCourseEditorStore((state) => state.pageOrder)
+  const { courseId: routeCourseId } = useParams<{ courseId: string }>()
+  // courseId thật của backend (để nạp tài liệu gốc): ưu tiên serverId, fallback route param
+  const resolvedCourseId =
+    course.serverId ?? (routeCourseId && routeCourseId !== 'new' ? Number(routeCourseId) : undefined)
   const [prompt, setPrompt] = useState('')
   const [loading, setLoading] = useState(false)
   const [askPrompt, setAskPrompt] = useState('')
@@ -56,10 +61,11 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
     setLoading(true)
     try {
       const result = await generatePageContent({
+        courseId: resolvedCourseId, // backend nạp tài liệu gốc → nội dung bám sát tài liệu
         courseTopic: course.title,
         sectionTitle,
         pageTopic: prompt,
-        language: 'Vietnamese',
+        language: 'auto', // ngôn ngữ theo tài liệu/chủ đề nguồn, không ép cứng
         additionalInstructions: course.description ?? ''
       })
       const safeType: BlockType = result.type === 'IMAGE' || result.type === 'VIDEO' ? result.type : 'TEXT'
@@ -131,7 +137,11 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
         </button>
         <button
           type='button'
-          onClick={() => setOpenAI(true)}
+          onClick={() => {
+            // Pre-fill chủ đề bằng tên page để page rỗng có thể sinh nội dung ngay
+            if (!prompt.trim()) setPrompt(page.title ?? '')
+            setOpenAI(true)
+          }}
           className='rounded-full border border-violet-300 bg-white px-3 py-1 text-sm text-violet-700 hover:bg-violet-50'
         >
           ✨ Generate with AI

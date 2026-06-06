@@ -42,6 +42,7 @@ export type AICourseOutlineResponse = {
 }
 
 export type AIGeneratePageContentRequest = {
+  courseId?: number // Để backend nạp tài liệu gốc làm nguồn, giúp nội dung bám sát tài liệu
   courseTopic: string
   sectionTitle: string
   pageTopic: string

@@ -27,7 +27,10 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
   const resolvedCourseId =
     course.serverId ?? (routeCourseId && routeCourseId !== 'new' ? Number(routeCourseId) : undefined)
   const [open, setOpen] = useState(false)
-  const [aiPrompt, setAiPrompt] = useState('Generate a beginner-level quiz for this page topic')
+  // Topic to base the quiz on; defaults to the page title so one click works,
+  // and the user can refine it. The course document is the source of facts.
+  const [aiPrompt, setAiPrompt] = useState(page.title ?? '')
+  const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard' | 'Mixed'>('Medium')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generatedQuestions, setGeneratedQuestions] = useState<
@@ -126,8 +129,8 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
         // Ô người dùng nhập = chủ đề trọng tâm; backend tự lấy tài liệu gốc làm nguồn
         focusTopic: aiPrompt,
         numberOfQuestions: 6,
-        language: 'Vietnamese',
-        difficulty: 'Trung bình'
+        language: 'auto', // ngôn ngữ theo tài liệu/nội dung nhập, không ép cứng
+        difficulty
       })
       setGeneratedQuestions(
         (result.questions ?? []).map((generated) => ({
@@ -165,9 +168,20 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
           onChange={(e) => setAiPrompt(e.target.value)}
           rows={3}
           className='w-full resize-none bg-transparent text-sm text-gray-700 outline-none'
-          placeholder='Describe what quiz to generate...'
+          placeholder='Enter the topic to base the quiz on (defaults to the page title)…'
         />
         <div className='mt-3 flex flex-wrap items-center gap-2'>
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value as 'Easy' | 'Medium' | 'Hard' | 'Mixed')}
+            aria-label='Difficulty'
+            className='rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-gray-700'
+          >
+            <option value='Easy'>Easy</option>
+            <option value='Medium'>Medium</option>
+            <option value='Hard'>Hard</option>
+            <option value='Mixed'>Mixed</option>
+          </select>
           <button
             type='button'
             onClick={handleGenerateQuiz}
