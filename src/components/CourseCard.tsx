@@ -5,13 +5,13 @@ export interface CourseCardProps {
   title: string
   description: string
   image?: string | null
-  status?: string 
-  tags?: string[] 
+  status?: string
+  tags?: string[]
   isFavorite?: boolean // Thêm prop trạng thái yêu thích
   onClick?: () => void
   onDelete?: () => void
-  onStatusChange?: (newStatus: string) => void 
-  onAddTag?: (newTag: string) => void 
+  onStatusChange?: (newStatus: string) => void
+  onAddTag?: (newTag: string) => void
   onFavoriteToggle?: (isFavorite: boolean) => void // Thêm prop xử lý click yêu thích
   isDeleting?: boolean
 }
@@ -25,7 +25,7 @@ const getGradientFromName = (name: string) => {
     'from-emerald-400 to-emerald-600',
     'from-rose-400 to-rose-600',
     'from-indigo-400 to-indigo-600',
-    'from-amber-400 to-amber-600',
+    'from-amber-400 to-amber-600'
   ]
   const index = (name || '').length % gradients.length
   return gradients[index]
@@ -35,8 +35,8 @@ const CourseCard: React.FC<CourseCardProps> = ({
   title,
   description,
   image,
-  status = 'Draft', 
-  tags = [], 
+  status = 'Draft',
+  tags = [],
   isFavorite = false, // Mặc định là false
   onClick,
   onDelete,
@@ -47,7 +47,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
 }) => {
   const [imgError, setImgError] = useState(false)
   const [isStatusOpen, setIsStatusOpen] = useState(false)
-  
+
   // State quản lý việc nhập tag mới
   const [isAddingTag, setIsAddingTag] = useState(false)
   const [newTagValue, setNewTagValue] = useState('')
@@ -90,7 +90,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   // Xử lý các phím tắt trong ô input tag
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Chặn mọi phím (đặc biệt là Space) nổi bọt lên Card cha gây chuyển trang
-    e.stopPropagation() 
+    e.stopPropagation()
 
     if (e.key === 'Enter') {
       e.preventDefault()
@@ -113,26 +113,21 @@ const CourseCard: React.FC<CourseCardProps> = ({
           onClick?.()
         }
       }}
-      className='group relative text-left bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 w-full h-full flex flex-col cursor-pointer'
+      className='group relative text-left bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 w-full h-full flex flex-col cursor-pointer overflow-visible'
     >
       <div className='relative shrink-0 bg-gray-100 rounded-t-xl overflow-hidden'>
         {image && !imgError ? (
-          <img 
-            src={image} 
-            alt={title} 
-            className='w-full h-44 object-cover'
-            onError={() => setImgError(true)}
-          />
+          <img src={image} alt={title} className='w-full h-44 object-cover' onError={() => setImgError(true)} />
         ) : (
           <div className={`w-full h-44 flex items-center justify-center bg-gradient-to-br ${gradientClass}`}>
-             <span className='text-white text-5xl font-bold opacity-90 drop-shadow-sm'>
-               {firstLetter}
-             </span>
+            <span className='text-white text-5xl font-bold opacity-90 drop-shadow-sm'>{firstLetter}</span>
           </div>
         )}
-        
+
         {/* Nút tác vụ góc trên bên phải (Favorite & Delete) */}
-        <div className={`absolute top-2 right-2 flex items-center gap-2 transition-opacity duration-200 ${isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+        <div
+          className={`absolute top-2 right-2 flex items-center gap-2 transition-opacity duration-200 ${isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+        >
           <button
             className={`bg-white/90 hover:bg-white p-2 rounded-full shadow-sm transition-colors ${
               isFavorite ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500'
@@ -162,39 +157,42 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </button>
         </div>
       </div>
-      
-      <div className='p-4 flex-1 flex flex-col min-w-0'>
-        <h3 className='text-xl font-bold text-blue-900 line-clamp-1 mb-2'>{title}</h3>
-        <p className='text-sm text-gray-800 line-clamp-3 leading-relaxed mb-4'>
-          {description}
-        </p>
 
-        <div 
-          className='mt-auto flex items-center justify-start gap-2 pt-2 overflow-x-auto pb-1'
+      <div className='p-4 flex-1 flex flex-col min-w-0 relative'>
+        <h3 className='text-xl font-bold text-blue-900 line-clamp-1 mb-2'>{title}</h3>
+        <p className='text-sm text-gray-800 line-clamp-3 leading-relaxed mb-4'>{description}</p>
+
+        <div
+          className='mt-auto flex items-center justify-start gap-2 pt-2 pb-1'
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <div className='relative shrink-0' ref={statusRef}>
-            <button 
-              type="button"
+            <button
+              type='button'
               onClick={(e) => {
                 e.stopPropagation()
                 setIsStatusOpen((v) => !v)
               }}
               className={`flex items-center gap-1 px-2.5 py-1.5 border rounded-full text-sm transition-colors whitespace-nowrap ${
-                isStatusOpen ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-400 text-gray-800 hover:bg-gray-50'
+                isStatusOpen
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-400 text-gray-800 hover:bg-gray-50'
               }`}
             >
-              <FiFileText size={14} className="shrink-0" />
+              <FiFileText size={14} className='shrink-0' />
               <span>{status}</span>
-              <FiChevronDown size={14} className={`shrink-0 transition-transform ${isStatusOpen ? 'rotate-180' : ''}`} />
+              <FiChevronDown
+                size={14}
+                className={`shrink-0 transition-transform ${isStatusOpen ? 'rotate-180' : ''}`}
+              />
             </button>
 
             {isStatusOpen && (
-              <div className="absolute bottom-full left-0 mb-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 flex flex-col">
+              <div className='absolute top-full left-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 flex flex-col'>
                 {COURSE_STATUSES.map((s) => (
                   <button
                     key={s}
-                    type="button"
+                    type='button'
                     onClick={(e) => {
                       e.stopPropagation()
                       onStatusChange?.(s)
@@ -216,40 +214,39 @@ const CourseCard: React.FC<CourseCardProps> = ({
           {isAddingTag ? (
             <input
               ref={tagInputRef}
-              type="text"
+              type='text'
               value={newTagValue}
               onChange={(e) => setNewTagValue(e.target.value)}
               onBlur={handleTagSubmit}
               onKeyDown={handleTagKeyDown}
-              onClick={(e) => e.stopPropagation()} 
-              maxLength={50} 
-              placeholder="Tag..."
-              className="w-24 shrink-0 px-2 py-1.5 text-sm border border-blue-500 rounded-full outline-none focus:ring-2 focus:ring-blue-100 bg-white transition-all shadow-sm"
+              onClick={(e) => e.stopPropagation()}
+              maxLength={50}
+              placeholder='Tag...'
+              className='w-24 shrink-0 px-2 py-1.5 text-sm border border-blue-500 rounded-full outline-none focus:ring-2 focus:ring-blue-100 bg-white transition-all shadow-sm'
             />
           ) : (
-            <button 
-              type="button"
+            <button
+              type='button'
               onClick={(e) => {
                 e.stopPropagation()
                 setIsAddingTag(true)
               }}
               className='flex items-center gap-1 px-2.5 py-1.5 border border-dashed border-gray-400 rounded-full text-sm text-gray-800 hover:bg-gray-50 transition-colors whitespace-nowrap shrink-0'
             >
-              <FiTag size={14} className="shrink-0" />
+              <FiTag size={14} className='shrink-0' />
               <span>{tags.length > 0 ? '+' : 'Add tag'}</span>
             </button>
           )}
 
           {tags.map((tag, index) => (
-            <span 
-              key={index} 
+            <span
+              key={index}
               className='flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-700 whitespace-nowrap shrink-0'
             >
-              <FiTag size={12} className="shrink-0 text-gray-500" />
+              <FiTag size={12} className='shrink-0 text-gray-500' />
               <span>{tag}</span>
             </span>
           ))}
-          
         </div>
       </div>
     </div>
