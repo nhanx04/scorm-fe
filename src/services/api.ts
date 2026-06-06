@@ -97,6 +97,7 @@ export type CreateCourseRequest = {
   tags?: string[] // Bổ sung trường tags cho yêu cầu tạo khóa học mới
   isFavorite?: boolean // Bổ sung trạng thái yêu thích (sẽ kế thừa cho cả UpdateCourseRequest)
   textHtml?: string
+  sourceDocumentText?: string // Văn bản gốc từ file tài liệu — nguồn cho AI tạo quiz
   themeOverride?: unknown
   layoutMode?: string
   layoutMeta?: unknown

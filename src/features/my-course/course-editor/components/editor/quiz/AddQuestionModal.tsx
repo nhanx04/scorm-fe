@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useParams } from 'react-router'
 import { CheckCircle2, CircleDot, HelpCircle, Link2, PenSquare, Sparkles, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Page, QuestionType } from '../../../types/editor.types'
@@ -21,10 +22,10 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
   const updateQuestion = useCourseEditorStore((s) => s.updateQuestion)
   const questionOrder = useCourseEditorStore((s) => s.questionOrder[page.id] ?? [])
   const course = useCourseEditorStore((s) => s.course)
-  const sections = useCourseEditorStore((s) => s.sections)
-  const pageOrder = useCourseEditorStore((s) => s.pageOrder)
-  const pages = useCourseEditorStore((s) => s.pages)
-  const blocks = useCourseEditorStore((s) => s.blocks)
+  const { courseId: routeCourseId } = useParams<{ courseId: string }>()
+  // courseId thật của backend: ưu tiên serverId trong store, fallback route param
+  const resolvedCourseId =
+    course.serverId ?? (routeCourseId && routeCourseId !== 'new' ? Number(routeCourseId) : undefined)
   const [open, setOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('Generate a beginner-level quiz for this page topic')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -52,20 +53,6 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
     }),
     []
   )
-
-  const sectionId = Object.keys(pageOrder).find((id) => pageOrder[id]?.includes(page.id))
-  const sectionTitle = sectionId ? (sections[sectionId]?.title ?? '') : ''
-  const pageTitle = pages[page.id]?.title ?? ''
-  const pageContent = (useCourseEditorStore.getState().blockOrder[page.id] ?? [])
-    .map((blockId) => blocks[blockId])
-    .map((block) => {
-      if (!block) return ''
-      if (block.type === 'TEXT') return block.textHtml ?? ''
-      if (block.type === 'IMAGE') return block.imageUrl ? `[Image: ${block.imageUrl}]` : ''
-      if (block.type === 'VIDEO') return block.embedUrl ? `[Video: ${block.embedUrl}]` : ''
-      return ''
-    })
-    .join('\n')
 
   const addGeneratedQuestionsToCourse = () => {
     for (const generated of generatedQuestions) {
@@ -135,11 +122,9 @@ const AddQuestionModal: React.FC<Props> = ({ page }) => {
     setIsGenerating(true)
     try {
       const result = await generateQuiz({
-        courseTitle: course.title,
-        courseDescription: course.description ?? '',
-        sectionTitle,
-        pageTitle,
-        sourceText: `${pageTitle}\n${pageContent}\n${aiPrompt}`,
+        courseId: resolvedCourseId,
+        // Ô người dùng nhập = chủ đề trọng tâm; backend tự lấy tài liệu gốc làm nguồn
+        focusTopic: aiPrompt,
         numberOfQuestions: 6,
         language: 'Vietnamese',
         difficulty: 'Trung bình'

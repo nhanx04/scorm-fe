@@ -36,6 +36,9 @@ export type AICourseOutlineResponse = {
     title: string
     topics: string[]
   }>
+  // Văn bản gốc trích từ file (chỉ có khi tạo outline từ file). Cần round-trip
+  // xuống createCourse để backend lưu làm nguồn cho việc tạo quiz sau này.
+  sourceDocumentText?: string
 }
 
 export type AIGeneratePageContentRequest = {
@@ -63,11 +66,12 @@ export type AIKnowledgeAnswerResponse = {
 }
 
 export type AIGenerateCourseQuizRequest = {
-  courseTitle: string
+  courseId?: number // Để backend nạp tài liệu gốc của khóa học làm nguồn dữ kiện
+  focusTopic: string // Nội dung/chủ đề người dùng nhập muốn ra đề
+  courseTitle?: string
   courseDescription?: string
-  sectionTitle: string
-  pageTitle: string
-  sourceText: string
+  sectionTitle?: string
+  pageTitle?: string
   numberOfQuestions: number
   language: string
   difficulty?: string
