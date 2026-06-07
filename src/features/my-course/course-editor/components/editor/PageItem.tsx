@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FiTrash2 } from 'react-icons/fi'
+import { FiChevronDown, FiChevronUp, FiTrash2 } from 'react-icons/fi'
 import { GrCircleQuestion } from 'react-icons/gr'
 import { LuTableOfContents } from 'react-icons/lu'
 
@@ -9,9 +9,23 @@ type PageItemProps = {
   onClick: () => void
   onDelete?: () => void
   pageType?: 'CONTENT' | 'QUIZ'
+  canMoveUp?: boolean
+  canMoveDown?: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }
 
-const PageItem: React.FC<PageItemProps> = ({ title, isActive, onClick, onDelete, pageType = 'CONTENT' }) => {
+const PageItem: React.FC<PageItemProps> = ({
+  title,
+  isActive,
+  onClick,
+  onDelete,
+  pageType = 'CONTENT',
+  canMoveUp = false,
+  canMoveDown = false,
+  onMoveUp,
+  onMoveDown
+}) => {
   const [isHovering, setIsHovering] = useState(false)
 
   const isQuiz = pageType === 'QUIZ'
@@ -39,6 +53,37 @@ const PageItem: React.FC<PageItemProps> = ({ title, isActive, onClick, onDelete,
           </span>
         </div>
       </button>
+
+      {(isHovering || isActive) && (onMoveUp || onMoveDown) && (
+        <div className='flex shrink-0 flex-col'>
+          <button
+            type='button'
+            onClick={(e) => {
+              e.stopPropagation()
+              onMoveUp?.()
+            }}
+            disabled={!canMoveUp}
+            className='rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30'
+            title='Move page up'
+            aria-label='Move page up'
+          >
+            <FiChevronUp className='h-3.5 w-3.5' />
+          </button>
+          <button
+            type='button'
+            onClick={(e) => {
+              e.stopPropagation()
+              onMoveDown?.()
+            }}
+            disabled={!canMoveDown}
+            className='rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30'
+            title='Move page down'
+            aria-label='Move page down'
+          >
+            <FiChevronDown className='h-3.5 w-3.5' />
+          </button>
+        </div>
+      )}
 
       {(isHovering || isActive) && onDelete && (
         <button

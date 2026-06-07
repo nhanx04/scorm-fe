@@ -18,6 +18,8 @@ const Sidebar: React.FC = () => {
   const removeSection = useCourseEditorStore((state) => state.removeSection)
   const setActivePage = useCourseEditorStore((state) => state.setActivePage)
   const removePage = useCourseEditorStore((state) => state.removePage)
+  const reorderSections = useCourseEditorStore((state) => state.reorderSections)
+  const reorderPages = useCourseEditorStore((state) => state.reorderPages)
   const theme = useCourseEditorStore((state) => state.theme)
 
   const [sectionToRemove, setSectionToRemove] = useState<string | null>(null)
@@ -73,7 +75,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className='flex-1 space-y-3 pr-1'>
-        {sectionOrder.map((sectionId) => {
+        {sectionOrder.map((sectionId, index) => {
           const section = sections[sectionId]
           if (!section) return null
 
@@ -85,11 +87,22 @@ const Sidebar: React.FC = () => {
               section={section}
               pages={sectionPages}
               activePageId={activePageId}
+              canMoveUp={index > 0}
+              canMoveDown={index < sectionOrder.length - 1}
               onSelectPage={setActivePage}
               onSectionTitleChange={(value) => updateSection(section.id, { title: value })}
               onAddPage={() => addPage(section.id, 'content')}
               onAddQuizPage={() => addPage(section.id, 'quiz')}
               onDeletePage={removePage}
+              onMoveUp={() => {
+                const prevId = sectionOrder[index - 1]
+                if (prevId) reorderSections(section.id, prevId)
+              }}
+              onMoveDown={() => {
+                const nextId = sectionOrder[index + 1]
+                if (nextId) reorderSections(section.id, nextId)
+              }}
+              onReorderPage={(activeId, overId) => reorderPages(section.id, activeId, overId)}
             />
           )
         })}
