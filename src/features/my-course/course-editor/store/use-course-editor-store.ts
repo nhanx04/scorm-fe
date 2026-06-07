@@ -32,6 +32,7 @@ type EditorActions = {
   removeSection: (sectionId: string) => void
   addPage: (sectionId: string, type?: Page['type']) => void
   updatePage: (pageId: string, data: Partial<Page>) => void
+  reorderPages: (sectionId: string, activeId: string, overId: string) => void
   removePage: (pageId: string) => void
   setActivePage: (pageId: string | null) => void
   addBlock: (pageId: string, type: BlockType) => void
@@ -245,6 +246,14 @@ export const useCourseEditorStore = create<EditorStore>()(
       set((s) => {
         if (!s.pages[pageId]) return
         Object.assign(s.pages[pageId], data)
+      }),
+    reorderPages: (sectionId, activeId, overId) =>
+      set((s) => {
+        const ids = s.pageOrder[sectionId] ?? []
+        const oldIndex = ids.indexOf(activeId)
+        const newIndex = ids.indexOf(overId)
+        if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return
+        s.pageOrder[sectionId] = moveInArray(ids, oldIndex, newIndex)
       }),
     removePage: (pageId) =>
       set((s) => {
