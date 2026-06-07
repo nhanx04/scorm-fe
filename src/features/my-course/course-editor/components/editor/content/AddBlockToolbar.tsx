@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams } from 'react-router'
 import type { BlockType, Page } from '../../../types/editor.types'
 import { useCourseEditorStore } from '../../../store/use-course-editor-store'
-import { askKnowledge, generatePageContent } from '../../../api/aiApi'
+import { generatePageContent } from '../../../api/aiApi'
 
 type AddBlockToolbarProps = {
   page: Page
@@ -25,9 +25,6 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
     course.serverId ?? (routeCourseId && routeCourseId !== 'new' ? Number(routeCourseId) : undefined)
   const [prompt, setPrompt] = useState('')
   const [loading, setLoading] = useState(false)
-  const [askPrompt, setAskPrompt] = useState('')
-  const [isAsking, setIsAsking] = useState(false)
-  const [askAnswer, setAskAnswer] = useState('')
 
   const onAdd = (type: BlockType) => {
     addBlock(page.id, type)
@@ -44,17 +41,6 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
 
   const sectionId = pageOrder ? Object.keys(pageOrder).find((id) => pageOrder[id]?.includes(page.id)) : undefined
   const sectionTitle = sectionId ? (sections[sectionId]?.title ?? '') : ''
-  const pageTitle = page.title ?? ''
-  const pageContent = (useCourseEditorStore.getState().blockOrder[page.id] ?? [])
-    .map((blockId) => useCourseEditorStore.getState().blocks[blockId])
-    .map((block) => {
-      if (!block) return ''
-      if (block.type === 'TEXT') return block.textHtml ?? ''
-      if (block.type === 'IMAGE') return block.imageUrl ? `[Image: ${block.imageUrl}]` : ''
-      if (block.type === 'VIDEO') return block.embedUrl ? `[Video: ${block.embedUrl}]` : ''
-      return ''
-    })
-    .join('\n')
 
   const onGenerateAIContent = async () => {
     if (!prompt.trim()) return
@@ -85,29 +71,8 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
       }
       setOpenAI(false)
       setPrompt('')
-      setAskPrompt('')
-      setAskAnswer('')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const onAskKnowledge = async () => {
-    if (!askPrompt.trim()) return
-    setIsAsking(true)
-    try {
-      const result = await askKnowledge({
-        courseTitle: course.title,
-        courseDescription: course.description ?? '',
-        sectionTitle,
-        pageTitle,
-        pageContent,
-        question: askPrompt,
-        language: 'Vietnamese'
-      })
-      setAskAnswer(result.answer)
-    } finally {
-      setIsAsking(false)
     }
   }
 
@@ -180,33 +145,6 @@ const AddBlockToolbar: React.FC<AddBlockToolbarProps> = ({ page, afterBlockId, o
                   </button>
                 </div>
               </div>
-
-              {/* <div>
-                <p className='mb-2 text-xs font-semibold text-gray-600'>Ask course Q&A</p>
-                <textarea
-                  value={askPrompt}
-                  onChange={(e) => setAskPrompt(e.target.value)}
-                  placeholder='Ask a question about this course/page...'
-                  rows={4}
-                  className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-200'
-                />
-                <div className='mt-3 flex justify-end'>
-                  <button
-                    type='button'
-                    disabled={isAsking}
-                    onClick={onAskKnowledge}
-                    className='rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-700 disabled:opacity-60'
-                  >
-                    {isAsking ? 'Asking...' : 'Ask AI'}
-                  </button>
-                </div>
-                {askAnswer && (
-                  <div className='mt-3 rounded-lg border border-violet-100 bg-violet-50 p-3 text-sm text-gray-700'>
-                    <p className='font-semibold text-violet-700'>AI Answer</p>
-                    <p className='mt-1 whitespace-pre-line'>{askAnswer}</p>
-                  </div>
-                )}
-              </div> */}
             </div>
           </div>
         </div>
