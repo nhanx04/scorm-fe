@@ -50,22 +50,6 @@ export type AIGeneratePageContentRequest = {
   additionalInstructions?: string
 }
 
-export type AIAskKnowledgeRequest = {
-  courseTitle: string
-  courseDescription?: string
-  sectionTitle: string
-  pageTitle: string
-  pageContent: string
-  question: string
-  language: string
-}
-
-export type AIKnowledgeAnswerResponse = {
-  answer: string
-  groundedInCourse: boolean
-  sourceScope: string
-}
-
 export type AIGenerateCourseQuizRequest = {
   courseId?: number // Để backend nạp tài liệu gốc của khóa học làm nguồn dữ kiện
   focusTopic: string // Nội dung/chủ đề người dùng nhập muốn ra đề
@@ -84,11 +68,6 @@ export const generatePageContent = async (payload: AIGeneratePageContentRequest)
     type: 'TEXT',
     content: data?.htmlContent ?? ''
   }
-}
-
-export const askKnowledge = async (payload: AIAskKnowledgeRequest): Promise<AIKnowledgeAnswerResponse> => {
-  const { data } = await api.post('/ai/ask-knowledge', payload)
-  return data
 }
 
 export const generateQuiz = async (payload: AIGenerateCourseQuizRequest): Promise<AIQuizResult> => {
