@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useLibraries, useLibraryItems } from '@/features/my-library/hooks/useLibrary'
+import { useUploadMedia } from '@/features/my-library/hooks/useUpload'
 import type { MediaItem } from '@/features/my-library/types/library'
 import type { ImageBlock } from '../../../../types/editor.types'
 
@@ -24,6 +25,10 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ block, onChange }) 
 
   const librariesQuery = useLibraries()
   const libraryItemsQuery = useLibraryItems(selectedLibraryId)
+  const uploadMedia = useUploadMedia()
+
+  const libraries = librariesQuery.data ?? []
+  const effectiveLibraryId = selectedLibraryId ?? libraries[0]?.libraryId
 
   const imageItems = useMemo(
     () => (libraryItemsQuery.data ?? []).filter((item) => item.mediaType === 'IMAGE' && Boolean(getImageUrl(item))),
@@ -33,8 +38,25 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ block, onChange }) 
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    const objectUrl = URL.createObjectURL(file)
-    onChange({ imageUrl: objectUrl, caption: block.caption })
+    if (!effectiveLibraryId) {
+      alert('Vui lòng chọn library trước')
+      return
+    }
+
+    uploadMedia.mutate(
+      {
+        type: 'IMAGE',
+        file,
+        title: file.name,
+        libraryId: effectiveLibraryId
+      },
+      {
+        onSuccess: (item) => {
+          const imageUrl = getImageUrl(item)
+          if (imageUrl) onChange({ imageUrl, caption: block.caption })
+        }
+      }
+    )
   }
 
   return (
@@ -102,12 +124,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ block, onChange }) 
         )}
       </div>
 
-      <input
-        value={block.caption ?? ''}
-        onChange={(e) => onChange({ caption: e.target.value })}
-        placeholder='Caption'
-        className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm'
-      />
+      <input ref={inputRef} type='file' accept='image/*' onChange={handleUpload} className='hidden' />
 
       {openLibrary && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'>
@@ -150,7 +167,6 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({ block, onChange }) 
                         type='button'
                         onClick={() => {
                           onChange({ imageUrl: url })
-                          setUrlInput(url)
                           setOpenLibrary(false)
                         }}
                         className='group overflow-hidden rounded-xl border border-gray-200 bg-white text-left hover:border-blue-300 hover:shadow-sm'
