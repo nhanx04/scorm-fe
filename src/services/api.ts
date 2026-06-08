@@ -104,6 +104,8 @@ export type CreateCourseRequest = {
   editorState?: unknown
   editorVersion?: string
   editorStatus?: string
+  // Văn bản gốc trích từ file (round-trip từ outline AI) → backend lưu làm nguồn cho RAG/quiz
+  sourceDocumentText?: string
 }
 
 export type UpdateCourseRequest = Partial<CreateCourseRequest>
